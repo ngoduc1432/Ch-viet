@@ -564,6 +564,3 @@
     </script>
 </body>
 </html>
-
-
-```
