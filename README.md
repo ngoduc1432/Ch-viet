@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KiotPro Mobile - Phân Tích Doanh Thu & Kho Hàng (Tích hợp AI)</title>
+    <title>KiotPro Mobile - Phân Tích Doanh Thu & Kho Hàng (Siêu Cấp AI)</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js CDN -->
@@ -33,10 +33,10 @@
         
         /* Chat bubble animations */
         .fade-in-up {
-            animation: fadeInUp 0.3s ease-out forwards;
+            animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(16px); }
             to { opacity: 1; transform: translateY(0); }
         }
         .typing-dot {
@@ -57,10 +57,10 @@
         <div class="bg-white/95 backdrop-blur-md w-full max-w-sm rounded-3xl shadow-2xl p-6 space-y-6 border border-white/20">
             <div class="text-center space-y-2">
                 <div class="inline-block bg-emerald-50 text-emerald-600 px-4 py-2 rounded-2xl font-black text-2xl tracking-wider shadow-inner">
-                    Kiot<span class="text-amber-500">Pro</span><span class="text-indigo-500 text-sm ml-1">AI</span>
+                    Kiot<span class="text-amber-500">Pro</span><span class="text-indigo-500 text-sm ml-1">AI 2.0</span>
                 </div>
                 <h2 class="text-lg font-bold text-slate-800">Hệ thống Đăng Nhập</h2>
-                <p class="text-xs text-slate-400">Ứng dụng POS & Quản lý kho thông minh</p>
+                <p class="text-xs text-slate-400">Ứng dụng POS & Quản lý kho thông minh tích hợp AI Actions</p>
             </div>
 
             <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
@@ -306,16 +306,14 @@
     </div>
 
     <!-- ==================== GEMINI AI FLOATING BUTTON ==================== -->
-    <div id="gemini-ai-fab" class="fixed bottom-24 right-4 z-40 hidden transition-all duration-300">
-        <button onclick="toggleAiChatSheet(true)" class="w-14 h-14 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-full shadow-lg hover:shadow-2xl active:scale-95 flex items-center justify-center text-white relative group border-2 border-white">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                <path d="M12 7v6"></path>
-                <path d="M12 17h.01"></path>
+    <div id="gemini-ai-fab" class="fixed bottom-20 right-4 z-40 hidden transition-all duration-300">
+        <button onclick="toggleAiChatSheet(true)" class="w-14 h-14 bg-gradient-to-tr from-indigo-500 via-purple-600 to-pink-500 rounded-full shadow-lg hover:shadow-2xl active:scale-90 flex items-center justify-center text-white relative group border-2 border-white">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 21l3.586-3.586m0 0a9 9 0 114.242-4.242l-4.242 4.242z" />
             </svg>
-            <span class="absolute -top-1 -right-1 flex h-4 w-4">
+            <span class="absolute -top-1 -right-1 flex h-4.5 w-4.5">
                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
-                <span class="relative inline-flex rounded-full h-4 w-4 bg-pink-500 border border-white"></span>
+                <span class="relative inline-flex rounded-full h-4.5 w-4.5 bg-pink-500 border border-white text-[9px] font-bold text-white items-center justify-center">AI</span>
             </span>
         </button>
     </div>
@@ -393,48 +391,66 @@
     <!-- ==================== GEMINI AI CHAT BOTTOM SHEET ==================== -->
     <div id="ai-chat-sheet" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex flex-col justify-end hidden">
         <div class="flex-1" onclick="toggleAiChatSheet(false)"></div>
-        <div class="bg-slate-50 rounded-t-3xl h-[85vh] flex flex-col shadow-2xl w-full max-w-md mx-auto slide-up overflow-hidden border border-slate-200">
+        <div class="bg-slate-50 rounded-t-3xl h-[88vh] flex flex-col shadow-2xl w-full max-w-md mx-auto slide-up overflow-hidden border border-slate-200">
             <!-- AI Header -->
-            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 px-5 py-4 flex justify-between items-center shrink-0 shadow-md relative">
+            <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 px-5 py-3.5 flex justify-between items-center shrink-0 shadow-md">
                 <div class="flex items-center space-x-3">
-                    <div class="bg-white/20 p-2 rounded-full">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    <div class="bg-white/10 p-2 rounded-2xl border border-white/20">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
                         </svg>
                     </div>
                     <div>
-                        <h3 class="font-extrabold text-base text-white leading-tight">KiotPro AI Assistant</h3>
-                        <p class="text-[10px] text-indigo-100 font-medium">Hỏi đáp trực tiếp về cửa hàng</p>
+                        <h3 class="font-extrabold text-sm text-white leading-tight">KiotPro AI Assistant 2.0</h3>
+                        <p class="text-[9px] text-pink-100 font-medium">Hỗ trợ tra cứu & kích hoạt tính năng tự động</p>
                     </div>
                 </div>
-                <button onclick="toggleAiChatSheet(false)" class="text-white/80 hover:text-white bg-white/10 p-1.5 rounded-full transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
+                <div class="flex items-center space-x-2">
+                    <button onclick="clearAiChatHistory()" class="text-[10px] text-white/75 hover:text-white bg-white/10 px-2 py-1 rounded-lg transition-colors font-semibold">
+                        Xóa lịch sử
+                    </button>
+                    <button onclick="toggleAiChatSheet(false)" class="text-white/80 hover:text-white bg-white/10 p-1.5 rounded-full transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             <!-- Chat Messages Area -->
-            <div class="flex-1 overflow-y-auto px-4 py-5 space-y-4" id="ai-chat-messages">
+            <div class="flex-1 overflow-y-auto px-4 py-4 space-y-4" id="ai-chat-messages">
                 <!-- Welcome Message -->
-                <div class="flex items-start space-x-2">
-                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shrink-0 shadow-sm">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
+                <div class="flex items-start space-x-2.5">
+                    <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shrink-0 shadow-sm text-white text-xs font-bold">
+                        AI
                     </div>
-                    <div class="bg-white border border-slate-200 p-3 rounded-2xl rounded-tl-none shadow-sm text-sm text-slate-700 max-w-[85%]">
-                        Xin chào! Tôi là trợ lý AI của KiotPro. Tôi đã được kết nối với dữ liệu cửa hàng của bạn. Bạn muốn biết thông tin gì hôm nay?
+                    <div class="bg-white border border-slate-200/80 p-3.5 rounded-2xl rounded-tl-none shadow-sm text-xs text-slate-700 max-w-[85%] space-y-2">
+                        <p>Xin chào! Tôi là trợ lý AI siêu cấp của KiotPro.</p>
+                        <p class="font-semibold text-slate-800">Tôi có thể tự động giúp bạn:</p>
+                        <ul class="list-disc pl-4 space-y-1 text-slate-600 text-[11px]">
+                            <li>Chuyển nhanh tab (<span class="text-indigo-600 font-bold">"mở báo cáo"</span>, <span class="text-indigo-600 font-bold">"bán hàng"</span>,...)</li>
+                            <li>Lọc sản phẩm tức thì (<span class="text-indigo-600 font-bold">"tìm iPhone"</span>, <span class="text-indigo-600 font-bold">"máy hết hàng"</span>)</li>
+                            <li>Báo cáo chi tiết doanh số & đề xuất kinh doanh</li>
+                        </ul>
                     </div>
                 </div>
+            </div>
+
+            <!-- Suggestion Prompts (Quick Click) -->
+            <div class="px-4 py-2 shrink-0 bg-slate-100/50 border-t border-slate-200 overflow-x-auto no-scrollbar flex space-x-1.5">
+                <button onclick="sendQuickPrompt('Báo cáo doanh thu hôm nay')" class="px-3 py-1.5 bg-white border border-slate-200 hover:border-indigo-400 text-[10px] font-bold text-slate-700 rounded-full shrink-0 shadow-xs transition-colors">📊 Doanh số hôm nay</button>
+                <button onclick="sendQuickPrompt('Mở tab Báo cáo')" class="px-3 py-1.5 bg-white border border-slate-200 hover:border-indigo-400 text-[10px] font-bold text-slate-700 rounded-full shrink-0 shadow-xs transition-colors">📈 Mở Báo cáo</button>
+                <button onclick="sendQuickPrompt('Lọc điện thoại iPhone')" class="px-3 py-1.5 bg-white border border-slate-200 hover:border-indigo-400 text-[10px] font-bold text-slate-700 rounded-full shrink-0 shadow-xs transition-colors">🍎 Tìm dòng iPhone</button>
+                <button onclick="sendQuickPrompt('Sản phẩm nào sắp hết hàng cần nhập')" class="px-3 py-1.5 bg-white border border-slate-200 hover:border-indigo-400 text-[10px] font-bold text-slate-700 rounded-full shrink-0 shadow-xs transition-colors">⚠️ Hàng sắp hết</button>
+                <button onclick="sendQuickPrompt('Lọc dòng Samsung')" class="px-3 py-1.5 bg-white border border-slate-200 hover:border-indigo-400 text-[10px] font-bold text-slate-700 rounded-full shrink-0 shadow-xs transition-colors">📱 Lọc Samsung</button>
             </div>
 
             <!-- Chat Input Area -->
             <div class="bg-white p-3 border-t border-slate-200 shrink-0">
                 <form id="ai-chat-form" onsubmit="handleSendAiMessage(event)" class="flex items-center space-x-2 relative">
-                    <input type="text" id="ai-chat-input" placeholder="Hỏi doanh thu, tồn kho..." autocomplete="off" class="flex-1 bg-slate-100 border-none rounded-full py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 placeholder-slate-400">
-                    <button type="submit" id="ai-send-btn" class="w-10 h-10 bg-indigo-600 text-white rounded-full flex items-center justify-center shadow-md hover:bg-indigo-700 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-0.5" viewBox="0 0 20 20" fill="currentColor">
+                    <input type="text" id="ai-chat-input" placeholder="Nhập yêu cầu hoặc câu hỏi..." autocomplete="off" class="flex-1 bg-slate-100 border-none rounded-full py-2.5 px-4 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 placeholder-slate-400">
+                    <button type="submit" id="ai-send-btn" class="w-9 h-9 bg-indigo-600 text-white rounded-full flex items-center justify-center shadow-md hover:bg-indigo-700 active:scale-95 transition-all disabled:opacity-50">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 ml-0.5" viewBox="0 0 20 20" fill="currentColor">
                             <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
                         </svg>
                     </button>
@@ -1039,11 +1055,11 @@
             const fab = document.getElementById("gemini-ai-fab");
             if (show) { 
                 sheet.classList.remove("hidden"); 
-                fab.classList.add("hidden"); // hide ai button when cart is open
+                fab.classList.add("hidden"); 
             } 
             else { 
                 sheet.classList.add("hidden"); 
-                fab.classList.remove("hidden"); // restore ai button
+                fab.classList.remove("hidden"); 
             }
         }
 
@@ -1146,7 +1162,7 @@
 
             const invoiceId = "HD" + Math.floor(1000 + Math.random() * 9000);
             
-            // Hardcode current datetime consistently based on system constraint
+            // Current datetime in 2026
             const formattedDate = "2026-06-03 11:33"; 
 
             const sellerInfo = currentUser ? `${currentUser.name} (${currentUser.code})` : "Hệ thống";
@@ -1699,8 +1715,6 @@
             if (reportPeriod === 'day') {
                 filteredInvoices = invoices.filter(inv => inv.date.startsWith(todayStr));
             } else if (reportPeriod === 'week') {
-                // Current week of June 3, 2026: June 1st (Monday) to June 7th (Sunday)
-                // Filter range: 2026-06-01 to 2026-06-07
                 filteredInvoices = invoices.filter(inv => {
                     const datePart = inv.date.split(' ')[0];
                     return datePart >= "2026-06-01" && datePart <= "2026-06-07";
@@ -1718,7 +1732,7 @@
             let totalOrders = filteredInvoices.length;
 
             // Compute metrics & identify Top Selling Products
-            const productSalesMap = {}; // mapping { product_name: total_quantity }
+            const productSalesMap = {}; 
 
             filteredInvoices.forEach(inv => {
                 totalRevenue += inv.totalAmount;
@@ -1795,12 +1809,10 @@
             let profitDataPoints = [];
 
             if (reportPeriod === 'day') {
-                // Today hourly layout (simulate typical shifts)
                 labels = ['08h-10h', '10h-12h', '12h-14h', '14h-16h', '16h-18h', '18h-20h', '20h-22h'];
                 revenueDataPoints = [4000000, 12000000, 5000000, 8000000, 0, 0, 0];
                 profitDataPoints = [450000, 1500000, 550000, 850000, 0, 0, 0];
 
-                // Overlay actual today orders on timeline
                 invoicesGroup.forEach(inv => {
                     const hour = parseInt(inv.date.split(' ')[1].split(':')[0]);
                     if (hour >= 8 && hour < 10) { revenueDataPoints[0] += inv.totalAmount; profitDataPoints[0] += inv.profit; }
@@ -1813,14 +1825,12 @@
                 });
 
             } else if (reportPeriod === 'week') {
-                // Weekly Timeline: Monday -> Sunday
                 labels = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ Nhật'];
                 revenueDataPoints = [0, 0, 0, 0, 0, 0, 0];
                 profitDataPoints = [0, 0, 0, 0, 0, 0, 0];
 
                 invoicesGroup.forEach(inv => {
                     const datePart = inv.date.split(' ')[0];
-                    // June 1, 2026 is Monday, June 7, 2026 is Sunday
                     if (datePart === "2026-06-01") { revenueDataPoints[0] += inv.totalAmount; profitDataPoints[0] += inv.profit; }
                     else if (datePart === "2026-06-02") { revenueDataPoints[1] += inv.totalAmount; profitDataPoints[1] += inv.profit; }
                     else if (datePart === "2026-06-03") { revenueDataPoints[2] += inv.totalAmount; profitDataPoints[2] += inv.profit; }
@@ -1831,7 +1841,6 @@
                 });
 
             } else if (reportPeriod === 'month') {
-                // Monthly Timeline breakdown: Week 1 -> Week 4
                 labels = ['Tuần 1', 'Tuần 2', 'Tuần 3', 'Tuần 4'];
                 revenueDataPoints = [0, 0, 0, 0];
                 profitDataPoints = [0, 0, 0, 0];
@@ -1845,7 +1854,6 @@
                 });
 
             } else if (reportPeriod === 'year') {
-                // Annual Timeline breakdown: Jan -> Dec (12 months)
                 labels = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'];
                 revenueDataPoints = Array(12).fill(0);
                 profitDataPoints = Array(12).fill(0);
@@ -1859,7 +1867,6 @@
                 });
             }
 
-            // Draw line chart (Dynamic & Interactive)
             const ctx = document.getElementById('revenueChart').getContext('2d');
             revenueChartObj = new Chart(ctx, {
                 type: 'line',
@@ -1909,8 +1916,8 @@
             });
         }
 
-        // ==================== GEMINI AI INTEGRATION ====================
-        const apiKey = ""; // API key is injected by the execution environment
+        // ==================== GEMINI AI INTEGRATION & ACTIONS ====================
+        const apiKey = ""; 
         let aiChatHistory = [];
 
         function toggleAiChatSheet(show) {
@@ -1922,7 +1929,23 @@
             }
         }
 
-        // Fetch wrapper with Exponential Backoff
+        function clearAiChatHistory() {
+            aiChatHistory = [];
+            const container = document.getElementById("ai-chat-messages");
+            container.innerHTML = `
+                <!-- Welcome Message -->
+                <div class="flex items-start space-x-2.5">
+                    <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shrink-0 shadow-sm text-white text-xs font-bold">
+                        AI
+                    </div>
+                    <div class="bg-white border border-slate-200/80 p-3.5 rounded-2xl rounded-tl-none shadow-sm text-xs text-slate-700 max-w-[85%] space-y-2">
+                        <p>Đã làm sạch lịch sử hội thoại! Tôi đã sẵn sàng nhận các yêu cầu mới.</p>
+                    </div>
+                </div>
+            `;
+            showToast("Đã xóa lịch sử chat AI.");
+        }
+
         async function fetchWithRetry(url, options, maxRetries = 5) {
             let delays = [1000, 2000, 4000, 8000, 16000];
             for (let i = 0; i < maxRetries; i++) {
@@ -1937,53 +1960,116 @@
             }
         }
 
-        // Generate dynamic Context so AI knows what is happening in the store
+        // AI System Instructions with Dynamic Schema for Action Dispatching
         function getAiSystemContext() {
             const totalProducts = products.length;
             const lowStockProducts = products.filter(p => p.stock <= p.minStock);
-            const lowStockList = lowStockProducts.length > 0 ? lowStockProducts.map(p => `${p.name} (còn ${p.stock})`).join(', ') : "Không có";
+            const lowStockList = lowStockProducts.length > 0 ? lowStockProducts.map(p => `${p.name} (mã: ${p.code}, còn: ${p.stock})`).join(', ') : "Không có";
             
             const todayStr = "2026-06-03";
             const todayInvoices = invoices.filter(i => i.date.includes(todayStr));
             const todayRevenue = todayInvoices.reduce((sum, inv) => sum + inv.totalAmount, 0);
+            const todayProfit = todayInvoices.reduce((sum, inv) => sum + inv.profit, 0);
             const totalOrders = todayInvoices.length;
 
-            return `Bạn là "KiotPro AI Assistant" - trợ lý thông minh hỗ trợ nhân viên/quản lý cửa hàng điện thoại. 
-            Dưới đây là thông tin thực tế của cửa hàng tại thời điểm hiện tại:
-            - Ngày hôm nay: 03/06/2026
-            - Người đang hỏi: ${currentUser ? currentUser.name : "Người dùng"} (Vai trò: ${currentUser ? currentUser.role : "Khách"})
-            - Tình hình kinh doanh hôm nay: Bán được ${totalOrders} đơn hàng, Doanh thu: ${formatVND(todayRevenue)}.
-            - Tổng số mặt hàng kinh doanh: ${totalProducts}.
-            - Hàng sắp hết cần nhập gấp: ${lowStockList}.
-            
-            Hãy trả lời người dùng một cách chuyên nghiệp, thân thiện, ngắn gọn và súc tích (phù hợp với màn hình điện thoại). 
-            Hãy xưng hô lịch sự và luôn ưu tiên sử dụng tiếng Việt. Hỗ trợ định dạng in đậm (**text**) để làm nổi bật thông số quan trọng.`;
+            return `Bạn là "KiotPro AI Assistant 2.0" - trợ lý đắc lực của chuỗi cửa hàng di động KiotPro.
+            Thời gian hệ thống hiện tại: Thứ Sáu, ngày 05/06/2026.
+            Người đang trò chuyện: ${currentUser ? currentUser.name : "Nhân viên"} (Vai trò: ${currentUser ? currentUser.role : "Nhân viên"}).
+
+            Dữ liệu hệ thống thời gian thực (Real-time Store Data):
+            - Doanh thu hôm nay (ngày 03/06/2026 giả định trong hóa đơn): ${formatVND(todayRevenue)} từ ${totalOrders} đơn hàng. Lợi nhuận gộp: ${formatVND(todayProfit)}.
+            - Tổng số mặt hàng hiện tại trong danh mục: ${totalProducts}.
+            - Sản phẩm sắp hết hàng (stock <= minStock): [${lowStockList}].
+
+            NHIỆM VỤ ĐẶC BIỆT - AI ACTIONS:
+            Bạn có khả năng hỗ trợ người dùng chuyển tab điều hướng hoặc tìm kiếm trực tiếp trên ứng dụng. Để kích hoạt hành động, ở cuối câu trả lời của bạn, nếu người dùng muốn làm gì đó, hãy chèn một đoạn cấu trúc JSON hợp lệ dạng:
+            [ACTION:{"type":"switch_tab","tab":"pos|products|invoices|customers|reports"} hoặc {"type":"search_pos","query":"tên máy cần tìm"} hoặc {"type":"search_products","query":"mã hoặc tên máy"}]
+            Ví dụ: Nếu người dùng nói "Mở báo cáo", hãy trả lời thân thiện và đính kèm: [ACTION:{"type":"switch_tab","tab":"reports"}]
+            Nếu người dùng bảo "Tìm cho tôi iPhone", hãy ghi: [ACTION:{"type":"search_pos","query":"iPhone"}] hoặc [ACTION:{"type":"search_products","query":"iPhone"}] dựa trên tab phù hợp nhất.
+
+            Nguyên tắc trả lời:
+            - Thân thiện, ngắn gọn, súc tích (phù hợp tuyệt đối với màn hình điện thoại).
+            - Trình bày dạng danh sách/bảng nếu có nhiều số liệu.
+            - Hỗ trợ định dạng in đậm (**text**) để làm nổi bật thông số quan trọng.
+            - Đóng vai trò là một trợ lý bán hàng chuyên nghiệp.`;
         }
 
         function formatMarkdownLike(text) {
-            return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                       .replace(/\n/g, '<br>');
+            // Remove the raw action block before displaying to user
+            let cleanText = text.replace(/\[ACTION:.*?\]/g, '').trim();
+            
+            return cleanText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                             .replace(/\n/g, '<br>');
+        }
+
+        // Parse and Dispatch Action detected from Gemini's response
+        function parseAndDispatchAction(rawText) {
+            const match = rawText.match(/\[ACTION:(.*?)\]/);
+            if (match && match[1]) {
+                try {
+                    const action = JSON.parse(match[1]);
+                    console.log("AI Action Dispatched:", action);
+                    
+                    if (action.type === "switch_tab") {
+                        switchTab(action.tab);
+                        showToast(`AI: Đang mở trang ${getTabDisplayName(action.tab)}...`);
+                    } 
+                    else if (action.type === "search_pos") {
+                        switchTab('pos');
+                        const input = document.getElementById("pos-search");
+                        if (input) {
+                            input.value = action.query;
+                            renderPosProducts();
+                            showToast(`AI: Đã lọc "${action.query}" trên màn bán hàng.`);
+                        }
+                    }
+                    else if (action.type === "search_products") {
+                        switchTab('products');
+                        const input = document.getElementById("product-list-search");
+                        if (input) {
+                            input.value = action.query;
+                            renderProductTable();
+                            showToast(`AI: Đã lọc "${action.query}" trong kho hàng.`);
+                        }
+                    }
+                } catch (e) {
+                    console.error("Lỗi parse AI Action:", e);
+                }
+            }
+        }
+
+        function getTabDisplayName(tab) {
+            const names = {
+                pos: "Bán hàng",
+                products: "Kho hàng",
+                invoices: "Hóa đơn",
+                customers: "Khách hàng",
+                reports: "Báo cáo kinh doanh",
+                staffs: "Nhân viên"
+            };
+            return names[tab] || tab;
         }
 
         function appendMessage(text, isUser = false) {
             const container = document.getElementById("ai-chat-messages");
             const msgDiv = document.createElement("div");
-            msgDiv.className = `flex items-end space-x-2 fade-in-up ${isUser ? 'justify-end' : 'justify-start'}`;
+            msgDiv.className = `flex items-start space-x-2.5 fade-in-up ${isUser ? 'justify-end space-x-reverse' : 'justify-start'}`;
             
             if (isUser) {
                 msgDiv.innerHTML = `
-                    <div class="bg-indigo-600 text-white p-3 rounded-2xl rounded-tr-none shadow-sm text-sm max-w-[85%]">
+                    <div class="bg-indigo-600 text-white p-3 rounded-2xl rounded-tr-none shadow-sm text-xs max-w-[85%] font-medium">
                         ${text}
+                    </div>
+                    <div class="w-8 h-8 rounded-xl bg-slate-200 flex items-center justify-center shrink-0 text-[10px] font-bold text-slate-600">
+                        Me
                     </div>
                 `;
             } else {
                 msgDiv.innerHTML = `
-                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shrink-0 shadow-sm">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
+                    <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shrink-0 shadow-sm text-white text-xs font-bold">
+                        AI
                     </div>
-                    <div class="bg-white border border-slate-200 p-3 rounded-2xl rounded-tl-none shadow-sm text-sm text-slate-700 max-w-[85%]">
+                    <div class="bg-white border border-slate-200/80 p-3 rounded-2xl rounded-tl-none shadow-sm text-xs text-slate-700 max-w-[85%] leading-relaxed">
                         ${formatMarkdownLike(text)}
                     </div>
                 `;
@@ -1999,12 +2085,10 @@
             msgDiv.id = "ai-typing-indicator";
             msgDiv.className = `flex items-end space-x-2 fade-in-up justify-start`;
             msgDiv.innerHTML = `
-                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shrink-0 shadow-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
+                <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shrink-0 shadow-sm text-white text-xs font-bold">
+                    AI
                 </div>
-                <div class="bg-white border border-slate-200 py-3.5 px-4 rounded-2xl rounded-tl-none shadow-sm flex space-x-1">
+                <div class="bg-white border border-slate-200 py-3.5 px-4 rounded-2xl rounded-tl-none shadow-sm flex space-x-1 items-center h-8">
                     <div class="w-1.5 h-1.5 bg-indigo-400 rounded-full typing-dot"></div>
                     <div class="w-1.5 h-1.5 bg-indigo-400 rounded-full typing-dot"></div>
                     <div class="w-1.5 h-1.5 bg-indigo-400 rounded-full typing-dot"></div>
@@ -2019,8 +2103,16 @@
             if (el) el.remove();
         }
 
+        // Quick Suggestion Prompts Click Handler
+        function sendQuickPrompt(promptText) {
+            const inputEl = document.getElementById("ai-chat-input");
+            inputEl.value = promptText;
+            document.getElementById("ai-chat-form").dispatchEvent(new Event('submit'));
+        }
+
         async function handleSendAiMessage(event) {
-            event.preventDefault();
+            if (event) event.preventDefault();
+            
             const inputEl = document.getElementById("ai-chat-input");
             const btnEl = document.getElementById("ai-send-btn");
             const text = inputEl.value.trim();
@@ -2034,7 +2126,6 @@
             appendMessage(text, true);
             appendLoadingIndicator();
 
-            // Prepare payload
             aiChatHistory.push({ role: "user", parts: [{ text: text }] });
             
             const systemContext = getAiSystemContext();
@@ -2055,17 +2146,18 @@
 
                 const replyText = response.candidates?.[0]?.content?.parts?.[0]?.text || "Xin lỗi, tôi không thể xử lý câu hỏi lúc này.";
                 
-                // Add AI response to history
                 aiChatHistory.push({ role: "model", parts: [{ text: replyText }] });
                 
                 removeLoadingIndicator();
                 appendMessage(replyText, false);
+                
+                // Process dynamic action if present
+                parseAndDispatchAction(replyText);
 
             } catch (error) {
                 console.error("AI Chat Error:", error);
                 removeLoadingIndicator();
                 appendMessage("Hệ thống kết nối AI đang gián đoạn, vui lòng thử lại sau.", false);
-                // Remove the last user message from history on error
                 aiChatHistory.pop();
             } finally {
                 inputEl.disabled = false;
