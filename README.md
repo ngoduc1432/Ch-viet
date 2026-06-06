@@ -236,11 +236,17 @@
             </div>
 
             <!-- TIME FILTER TABS (Doanh thu ngày, tuần, tháng, năm) -->
-            <div class="bg-slate-200/80 p-1 rounded-2xl grid grid-cols-4 gap-1 text-center shrink-0">
-                <button onclick="setReportPeriod('day')" id="btn-period-day" class="py-2 text-xs font-bold rounded-xl transition-all bg-white text-emerald-700 shadow-sm">Hôm nay</button>
-                <button onclick="setReportPeriod('week')" id="btn-period-week" class="py-2 text-xs font-bold rounded-xl transition-all text-slate-600">Tuần này</button>
-                <button onclick="setReportPeriod('month')" id="btn-period-month" class="py-2 text-xs font-bold rounded-xl transition-all text-slate-600">Tháng này</button>
-                <button onclick="setReportPeriod('year')" id="btn-period-year" class="py-2 text-xs font-bold rounded-xl transition-all text-slate-600">Năm nay</button>
+            <div class="bg-slate-200/80 p-1 rounded-2xl flex gap-1 text-center shrink-0 overflow-x-auto no-scrollbar">
+                <button onclick="setReportPeriod('day')" id="btn-period-day" class="flex-1 py-2 px-2 text-xs font-bold rounded-xl transition-all bg-white text-emerald-700 shadow-sm whitespace-nowrap">Hôm nay</button>
+                <button onclick="setReportPeriod('week')" id="btn-period-week" class="flex-1 py-2 px-2 text-xs font-bold rounded-xl transition-all text-slate-600 whitespace-nowrap">Tuần này</button>
+                <button onclick="setReportPeriod('month')" id="btn-period-month" class="flex-1 py-2 px-2 text-xs font-bold rounded-xl transition-all text-slate-600 whitespace-nowrap">Theo tháng</button>
+                <button onclick="setReportPeriod('year')" id="btn-period-year" class="flex-1 py-2 px-2 text-xs font-bold rounded-xl transition-all text-slate-600 whitespace-nowrap">Năm nay</button>
+            </div>
+
+            <!-- Custom Month Picker (Hidden by default) -->
+            <div id="month-picker-container" class="hidden flex justify-between items-center bg-emerald-50/50 p-2.5 rounded-xl border border-emerald-100">
+                <label for="custom-month-selector" class="text-xs font-extrabold text-emerald-800 uppercase tracking-wide">Chọn tháng báo cáo:</label>
+                <input type="month" id="custom-month-selector" value="2026-06" onchange="renderReportDashboard()" class="px-3 py-1.5 border border-emerald-200 rounded-lg text-sm font-bold text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm">
             </div>
 
             <!-- Stats Grid -->
@@ -1685,20 +1691,17 @@
             periods.forEach(p => {
                 const btn = document.getElementById(`btn-period-${p}`);
                 if (p === period) {
-                    btn.className = "py-2 text-xs font-bold rounded-xl transition-all bg-white text-emerald-700 shadow-sm";
+                    btn.className = "flex-1 py-2 px-2 text-xs font-bold rounded-xl transition-all bg-white text-emerald-700 shadow-sm whitespace-nowrap";
                 } else {
-                    btn.className = "py-2 text-xs font-bold rounded-xl transition-all text-slate-600";
+                    btn.className = "flex-1 py-2 px-2 text-xs font-bold rounded-xl transition-all text-slate-600 whitespace-nowrap";
                 }
             });
 
-            // Set chart label
-            const periodLabels = {
-                day: "Hôm nay",
-                week: "Tuần này",
-                month: "Tháng này",
-                year: "Năm nay"
-            };
-            document.getElementById("chart-period-lbl").innerText = periodLabels[period];
+            if (period === 'month') {
+                document.getElementById('month-picker-container').classList.remove('hidden');
+            } else {
+                document.getElementById('month-picker-container').classList.add('hidden');
+            }
 
             renderReportDashboard();
         }
@@ -1707,21 +1710,27 @@
             // Hardcode base date for 2026: Wednesday, June 3rd, 2026.
             const todayStr = "2026-06-03";
             const currentYearStr = "2026";
-            const currentMonthStr = "2026-06"; // June
 
             // Filter invoices dynamically based on the active reportPeriod
             let filteredInvoices = [];
 
             if (reportPeriod === 'day') {
+                document.getElementById("chart-period-lbl").innerText = "Hôm nay";
                 filteredInvoices = invoices.filter(inv => inv.date.startsWith(todayStr));
             } else if (reportPeriod === 'week') {
+                document.getElementById("chart-period-lbl").innerText = "Tuần này";
                 filteredInvoices = invoices.filter(inv => {
                     const datePart = inv.date.split(' ')[0];
                     return datePart >= "2026-06-01" && datePart <= "2026-06-07";
                 });
             } else if (reportPeriod === 'month') {
-                filteredInvoices = invoices.filter(inv => inv.date.startsWith(currentMonthStr));
+                const selectedMonth = document.getElementById("custom-month-selector").value; // e.g. "2026-06"
+                if (!selectedMonth) return;
+                const [year, month] = selectedMonth.split('-');
+                document.getElementById("chart-period-lbl").innerText = `Tháng ${month}/${year}`;
+                filteredInvoices = invoices.filter(inv => inv.date.startsWith(selectedMonth));
             } else if (reportPeriod === 'year') {
+                document.getElementById("chart-period-lbl").innerText = "Năm nay";
                 filteredInvoices = invoices.filter(inv => inv.date.startsWith(currentYearStr));
             }
 
@@ -1841,16 +1850,18 @@
                 });
 
             } else if (reportPeriod === 'month') {
-                labels = ['Tuần 1', 'Tuần 2', 'Tuần 3', 'Tuần 4'];
-                revenueDataPoints = [0, 0, 0, 0];
-                profitDataPoints = [0, 0, 0, 0];
+                // Break the month dynamically into 5 viewable sections
+                labels = ['Tuần 1 (1-7)', 'Tuần 2 (8-14)', 'Tuần 3 (15-21)', 'Tuần 4 (22-28)', 'Cuối tháng'];
+                revenueDataPoints = [0, 0, 0, 0, 0];
+                profitDataPoints = [0, 0, 0, 0, 0];
 
                 invoicesGroup.forEach(inv => {
                     const dayVal = parseInt(inv.date.split(' ')[0].split('-')[2]);
                     if (dayVal <= 7) { revenueDataPoints[0] += inv.totalAmount; profitDataPoints[0] += inv.profit; }
                     else if (dayVal <= 14) { revenueDataPoints[1] += inv.totalAmount; profitDataPoints[1] += inv.profit; }
                     else if (dayVal <= 21) { revenueDataPoints[2] += inv.totalAmount; profitDataPoints[2] += inv.profit; }
-                    else { revenueDataPoints[3] += inv.totalAmount; profitDataPoints[3] += inv.profit; }
+                    else if (dayVal <= 28) { revenueDataPoints[3] += inv.totalAmount; profitDataPoints[3] += inv.profit; }
+                    else { revenueDataPoints[4] += inv.totalAmount; profitDataPoints[4] += inv.profit; }
                 });
 
             } else if (reportPeriod === 'year') {
@@ -2168,3 +2179,5 @@
     </script>
 </body>
 </html>
+
+```
