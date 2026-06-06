@@ -57,7 +57,7 @@
         <div class="bg-white/95 backdrop-blur-md w-full max-w-sm rounded-3xl shadow-2xl p-6 space-y-6 border border-white/20">
             <div class="text-center space-y-2">
                 <div class="inline-block bg-emerald-50 text-emerald-600 px-4 py-2 rounded-2xl font-black text-2xl tracking-wider shadow-inner">
-                    Kiot<span class="text-amber-500">Pro</span><span class="text-indigo-500 text-sm ml-1">AI 2.0</span>
+                    Kiot<span class="text-amber-500">Pro</span><span class="text-indigo-500 text-sm ml-1">AI 3.0</span>
                 </div>
                 <h2 class="text-lg font-bold text-slate-800">Hệ thống Đăng Nhập</h2>
                 <p class="text-xs text-slate-400">Ứng dụng POS & Quản lý kho thông minh tích hợp AI Actions</p>
@@ -407,8 +407,8 @@
                         </svg>
                     </div>
                     <div>
-                        <h3 class="font-extrabold text-sm text-white leading-tight">KiotPro AI Assistant 2.0</h3>
-                        <p class="text-[9px] text-pink-100 font-medium">Hỗ trợ tra cứu & kích hoạt tính năng tự động</p>
+                        <h3 class="font-extrabold text-sm text-white leading-tight">KiotPro AI Assistant 3.0</h3>
+                        <p class="text-[9px] text-pink-100 font-medium">Auto-Cart & Phân Tích Dữ Liệu Thời Gian Thực</p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-2">
@@ -431,12 +431,12 @@
                         AI
                     </div>
                     <div class="bg-white border border-slate-200/80 p-3.5 rounded-2xl rounded-tl-none shadow-sm text-xs text-slate-700 max-w-[85%] space-y-2">
-                        <p>Xin chào! Tôi là trợ lý AI siêu cấp của KiotPro.</p>
-                        <p class="font-semibold text-slate-800">Tôi có thể tự động giúp bạn:</p>
+                        <p>Xin chào! Mình là phiên bản <strong>AI 3.0</strong> được nâng cấp mạnh mẽ.</p>
+                        <p class="font-semibold text-slate-800">Các tính năng mới nhất:</p>
                         <ul class="list-disc pl-4 space-y-1 text-slate-600 text-[11px]">
-                            <li>Chuyển nhanh tab (<span class="text-indigo-600 font-bold">"mở báo cáo"</span>, <span class="text-indigo-600 font-bold">"bán hàng"</span>,...)</li>
-                            <li>Lọc sản phẩm tức thì (<span class="text-indigo-600 font-bold">"tìm iPhone"</span>, <span class="text-indigo-600 font-bold">"máy hết hàng"</span>)</li>
-                            <li>Báo cáo chi tiết doanh số & đề xuất kinh doanh</li>
+                            <li><strong>Phân tích báo cáo:</strong> "Hôm nay bán được bao nhiêu?", "Mở báo cáo tháng này".</li>
+                            <li><strong>Quản lý kho:</strong> "Có máy nào bán chạy không?", "Còn máy nào sắp hết?".</li>
+                            <li><strong>Tự động bán hàng:</strong> "Thêm iPhone 15 Pro Max vào giỏ hàng giúp mình".</li>
                         </ul>
                     </div>
                 </div>
@@ -444,17 +444,17 @@
 
             <!-- Suggestion Prompts (Quick Click) -->
             <div class="px-4 py-2 shrink-0 bg-slate-100/50 border-t border-slate-200 overflow-x-auto no-scrollbar flex space-x-1.5">
-                <button onclick="sendQuickPrompt('Báo cáo doanh thu hôm nay')" class="px-3 py-1.5 bg-white border border-slate-200 hover:border-indigo-400 text-[10px] font-bold text-slate-700 rounded-full shrink-0 shadow-xs transition-colors">📊 Doanh số hôm nay</button>
-                <button onclick="sendQuickPrompt('Mở tab Báo cáo')" class="px-3 py-1.5 bg-white border border-slate-200 hover:border-indigo-400 text-[10px] font-bold text-slate-700 rounded-full shrink-0 shadow-xs transition-colors">📈 Mở Báo cáo</button>
-                <button onclick="sendQuickPrompt('Lọc điện thoại iPhone')" class="px-3 py-1.5 bg-white border border-slate-200 hover:border-indigo-400 text-[10px] font-bold text-slate-700 rounded-full shrink-0 shadow-xs transition-colors">🍎 Tìm dòng iPhone</button>
-                <button onclick="sendQuickPrompt('Sản phẩm nào sắp hết hàng cần nhập')" class="px-3 py-1.5 bg-white border border-slate-200 hover:border-indigo-400 text-[10px] font-bold text-slate-700 rounded-full shrink-0 shadow-xs transition-colors">⚠️ Hàng sắp hết</button>
-                <button onclick="sendQuickPrompt('Lọc dòng Samsung')" class="px-3 py-1.5 bg-white border border-slate-200 hover:border-indigo-400 text-[10px] font-bold text-slate-700 rounded-full shrink-0 shadow-xs transition-colors">📱 Lọc Samsung</button>
+                <button onclick="sendQuickPrompt('Hôm nay bán được bao nhiêu doanh thu?')" class="px-3 py-1.5 bg-white border border-slate-200 hover:border-indigo-400 text-[10px] font-bold text-slate-700 rounded-full shrink-0 shadow-xs transition-colors">📊 Hỏi doanh thu nay</button>
+                <button onclick="sendQuickPrompt('Thêm iPhone 15 Pro Max vào giỏ hàng')" class="px-3 py-1.5 bg-white border border-slate-200 hover:border-indigo-400 text-[10px] font-bold text-slate-700 rounded-full shrink-0 shadow-xs transition-colors">🛒 Bán 1 iPhone 15 PM</button>
+                <button onclick="sendQuickPrompt('Mở báo cáo tháng này')" class="px-3 py-1.5 bg-white border border-slate-200 hover:border-indigo-400 text-[10px] font-bold text-slate-700 rounded-full shrink-0 shadow-xs transition-colors">📈 Mở Báo cáo Tháng</button>
+                <button onclick="sendQuickPrompt('Hiện tại cửa hàng đang có máy nào bán chạy nhất?')" class="px-3 py-1.5 bg-white border border-slate-200 hover:border-indigo-400 text-[10px] font-bold text-slate-700 rounded-full shrink-0 shadow-xs transition-colors">🔥 Hỏi máy bán chạy</button>
+                <button onclick="sendQuickPrompt('Tìm các điện thoại dòng Samsung')" class="px-3 py-1.5 bg-white border border-slate-200 hover:border-indigo-400 text-[10px] font-bold text-slate-700 rounded-full shrink-0 shadow-xs transition-colors">📱 Lọc dòng Samsung</button>
             </div>
 
             <!-- Chat Input Area -->
             <div class="bg-white p-3 border-t border-slate-200 shrink-0">
                 <form id="ai-chat-form" onsubmit="handleSendAiMessage(event)" class="flex items-center space-x-2 relative">
-                    <input type="text" id="ai-chat-input" placeholder="Nhập yêu cầu hoặc câu hỏi..." autocomplete="off" class="flex-1 bg-slate-100 border-none rounded-full py-2.5 px-4 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 placeholder-slate-400">
+                    <input type="text" id="ai-chat-input" placeholder="Nhập yêu cầu hoặc câu hỏi cho AI..." autocomplete="off" class="flex-1 bg-slate-100 border-none rounded-full py-2.5 px-4 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 placeholder-slate-400">
                     <button type="submit" id="ai-send-btn" class="w-9 h-9 bg-indigo-600 text-white rounded-full flex items-center justify-center shadow-md hover:bg-indigo-700 active:scale-95 transition-all disabled:opacity-50">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 ml-0.5" viewBox="0 0 20 20" fill="currentColor">
                             <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
@@ -1950,7 +1950,7 @@
                         AI
                     </div>
                     <div class="bg-white border border-slate-200/80 p-3.5 rounded-2xl rounded-tl-none shadow-sm text-xs text-slate-700 max-w-[85%] space-y-2">
-                        <p>Đã làm sạch lịch sử hội thoại! Tôi đã sẵn sàng nhận các yêu cầu mới.</p>
+                        <p>Đã làm sạch lịch sử hội thoại! Mình đã sẵn sàng hỗ trợ tiếp.</p>
                     </div>
                 </div>
             `;
@@ -1971,76 +1971,136 @@
             }
         }
 
-        // AI System Instructions with Dynamic Schema for Action Dispatching
+        // Advanced AI System Context Data gathering
         function getAiSystemContext() {
+            // Inventory metrics
             const totalProducts = products.length;
             const lowStockProducts = products.filter(p => p.stock <= p.minStock);
-            const lowStockList = lowStockProducts.length > 0 ? lowStockProducts.map(p => `${p.name} (mã: ${p.code}, còn: ${p.stock})`).join(', ') : "Không có";
+            const lowStockList = lowStockProducts.length > 0 ? lowStockProducts.map(p => `${p.name} (Mã: ${p.code}, Tồn: ${p.stock})`).join(', ') : "Không có";
             
+            // Financials of the simulated today (2026-06-03)
             const todayStr = "2026-06-03";
             const todayInvoices = invoices.filter(i => i.date.includes(todayStr));
             const todayRevenue = todayInvoices.reduce((sum, inv) => sum + inv.totalAmount, 0);
             const todayProfit = todayInvoices.reduce((sum, inv) => sum + inv.profit, 0);
             const totalOrders = todayInvoices.length;
 
-            return `Bạn là "KiotPro AI Assistant 2.0" - trợ lý đắc lực của chuỗi cửa hàng di động KiotPro.
-            Thời gian hệ thống hiện tại: Thứ Sáu, ngày 05/06/2026.
-            Người đang trò chuyện: ${currentUser ? currentUser.name : "Nhân viên"} (Vai trò: ${currentUser ? currentUser.role : "Nhân viên"}).
+            // Product Best Sellers map
+            const salesMap = {};
+            invoices.forEach(inv => inv.items.forEach(item => salesMap[item.name] = (salesMap[item.name] || 0) + item.quantity));
+            const bestSellers = Object.entries(salesMap)
+                                .sort((a,b) => b[1]-a[1])
+                                .slice(0, 3)
+                                .map(arr => `${arr[0]} (đã bán ${arr[1]} máy)`).join(', ');
 
-            Dữ liệu hệ thống thời gian thực (Real-time Store Data):
-            - Doanh thu hôm nay (ngày 03/06/2026 giả định trong hóa đơn): ${formatVND(todayRevenue)} từ ${totalOrders} đơn hàng. Lợi nhuận gộp: ${formatVND(todayProfit)}.
-            - Tổng số mặt hàng hiện tại trong danh mục: ${totalProducts}.
-            - Sản phẩm sắp hết hàng (stock <= minStock): [${lowStockList}].
+            return `Bạn là "KiotPro AI Assistant 3.0" - trợ lý thông minh của hệ thống quản lý KiotPro Mobile.
+Ngày hôm nay: Thứ Sáu, 05/06/2026 (dữ liệu ca làm việc chuẩn hiện tại tập trung ngày 03/06/2026).
+Người đang chat: ${currentUser ? currentUser.name : "Khách"} (Quyền: ${currentUser ? currentUser.role : "Nhân viên"}).
 
-            NHIỆM VỤ ĐẶC BIỆT - AI ACTIONS:
-            Bạn có khả năng hỗ trợ người dùng chuyển tab điều hướng hoặc tìm kiếm trực tiếp trên ứng dụng. Để kích hoạt hành động, ở cuối câu trả lời của bạn, nếu người dùng muốn làm gì đó, hãy chèn một đoạn cấu trúc JSON hợp lệ dạng:
-            [ACTION:{"type":"switch_tab","tab":"pos|products|invoices|customers|reports"} hoặc {"type":"search_pos","query":"tên máy cần tìm"} hoặc {"type":"search_products","query":"mã hoặc tên máy"}]
-            Ví dụ: Nếu người dùng nói "Mở báo cáo", hãy trả lời thân thiện và đính kèm: [ACTION:{"type":"switch_tab","tab":"reports"}]
-            Nếu người dùng bảo "Tìm cho tôi iPhone", hãy ghi: [ACTION:{"type":"search_pos","query":"iPhone"}] hoặc [ACTION:{"type":"search_products","query":"iPhone"}] dựa trên tab phù hợp nhất.
+📊 DỮ LIỆU THỰC TẾ CỦA CỬA HÀNG (REAL-TIME DATA):
+- Doanh thu hôm nay: ${formatVND(todayRevenue)}. Lợi nhuận: ${formatVND(todayProfit)}. Số đơn: ${totalOrders}.
+- Kho hàng có: ${totalProducts} dòng thiết bị.
+- Hàng sắp hết: [${lowStockList}].
+- Sản phẩm đang bán chạy nhất: [${bestSellers}].
 
-            Nguyên tắc trả lời:
-            - Thân thiện, ngắn gọn, súc tích (phù hợp tuyệt đối với màn hình điện thoại).
-            - Trình bày dạng danh sách/bảng nếu có nhiều số liệu.
-            - Hỗ trợ định dạng in đậm (**text**) để làm nổi bật thông số quan trọng.
-            - Đóng vai trò là một trợ lý bán hàng chuyên nghiệp.`;
+🛠️ ĐIỀU KHIỂN HỆ THỐNG (AI ACTIONS):
+Bạn có khả năng tự động thao tác thay cho người dùng! Khi muốn ra lệnh hệ thống, bạn CHỈ CẦN chèn ĐÚNG MỘT đoạn mã JSON ở cuối tin nhắn trả lời.
+Cấu trúc bắt buộc: [ACTION:{"type":"...", "..."}]
+
+CÁC LỆNH HỖ TRỢ:
+1. Mở các trang quản lý: [ACTION:{"type":"switch_tab","tab":"pos|products|invoices|customers|reports"}]
+   (Ví dụ người dùng bảo: "Cho mình xem báo cáo" -> [ACTION:{"type":"switch_tab","tab":"reports"}])
+2. Lọc nhanh/Tìm kiếm: [ACTION:{"type":"search","tab":"pos|products","query":"TỪ KHÓA"}]
+   (Ví dụ: "Tìm iPhone" -> [ACTION:{"type":"search","tab":"pos","query":"iPhone"}])
+3. Mở báo cáo kinh doanh theo thời gian: [ACTION:{"type":"open_report","period":"day|week|month|year"}]
+   (Ví dụ: "Báo cáo tháng này" -> [ACTION:{"type":"open_report","period":"month"}])
+4. Thêm sản phẩm vào giỏ hàng TỰ ĐỘNG: [ACTION:{"type":"add_to_cart","productCode":"MÃ SẢN PHẨM"}]
+   (Quan trọng: Bạn phải lấy đúng MÃ SẢN PHẨM trong hệ thống để điền vào. Ví dụ: DT001, DT002, DT003... Ví dụ người dùng nói "Bán 1 cái iPhone 15 Pro Max" -> Bạn đáp: "Mình đã thêm iPhone 15 Pro Max vào giỏ hàng nhé." + [ACTION:{"type":"add_to_cart","productCode":"DT001"}])
+   Bảng mã hàng:
+   - iPhone 15 Pro Max 256GB: DT001
+   - Samsung Galaxy S24 Ultra 512GB: DT002
+   - iPhone 13 128GB: DT003
+   - Oppo Reno11 5G: DT004
+   - Xiaomi Redmi Note 13: DT005
+   - iPhone 15 128GB: DT006
+
+QUY TẮC TRẢ LỜI:
+- Thân thiện, gọn gàng, phù hợp màn hình điện thoại. Dùng "Mình" và "Bạn".
+- Dùng dấu (*) hoặc (-) để tạo danh sách bullet point.
+- Dùng dấu (**) để **in đậm** text quan trọng.`;
         }
 
         function formatMarkdownLike(text) {
-            // Remove the raw action block before displaying to user
+            // Xóa phần action ẩn đi
             let cleanText = text.replace(/\[ACTION:.*?\]/g, '').trim();
             
-            return cleanText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                             .replace(/\n/g, '<br>');
+            // Xử lý Bold **
+            cleanText = cleanText.replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-800 font-extrabold">$1</strong>');
+            
+            // Xử lý list (bullet points dạng - hoặc *)
+            let lines = cleanText.split('\n');
+            let inList = false;
+            let htmlLines = [];
+            
+            lines.forEach(line => {
+                let trimmed = line.trim();
+                if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+                    if (!inList) {
+                        htmlLines.push('<ul class="list-disc ml-4 space-y-1 my-2">');
+                        inList = true;
+                    }
+                    htmlLines.push(`<li>${trimmed.substring(2)}</li>`);
+                } else {
+                    if (inList) {
+                        htmlLines.push('</ul>');
+                        inList = false;
+                    }
+                    htmlLines.push(`${line}<br>`);
+                }
+            });
+            
+            if (inList) htmlLines.push('</ul>');
+            
+            return htmlLines.join('').replace(/(<br>)+$/g, ''); // Xóa <br> dư ở cuối
         }
 
         // Parse and Dispatch Action detected from Gemini's response
         function parseAndDispatchAction(rawText) {
-            const match = rawText.match(/\[ACTION:(.*?)\]/);
-            if (match && match[1]) {
+            const regex = /\[ACTION:(.*?)\]/g;
+            let match;
+            while ((match = regex.exec(rawText)) !== null) {
                 try {
                     const action = JSON.parse(match[1]);
                     console.log("AI Action Dispatched:", action);
                     
                     if (action.type === "switch_tab") {
                         switchTab(action.tab);
-                        showToast(`AI: Đang mở trang ${getTabDisplayName(action.tab)}...`);
+                        showToast(`AI: Đang mở trang ${getTabDisplayName(action.tab)}`);
                     } 
-                    else if (action.type === "search_pos") {
-                        switchTab('pos');
-                        const input = document.getElementById("pos-search");
+                    else if (action.type === "search") {
+                        switchTab(action.tab);
+                        let inputId = action.tab === "pos" ? "pos-search" : "product-list-search";
+                        const input = document.getElementById(inputId);
                         if (input) {
                             input.value = action.query;
-                            renderPosProducts();
-                            showToast(`AI: Đã lọc "${action.query}" trên màn bán hàng.`);
+                            if(action.tab === "pos") renderPosProducts();
+                            else renderProductTable();
+                            showToast(`AI: Đã lọc từ khóa "${action.query}"`);
                         }
                     }
-                    else if (action.type === "search_products") {
-                        switchTab('products');
-                        const input = document.getElementById("product-list-search");
-                        if (input) {
-                            input.value = action.query;
-                            renderProductTable();
-                            showToast(`AI: Đã lọc "${action.query}" trong kho hàng.`);
+                    else if (action.type === "open_report") {
+                        switchTab('reports');
+                        setReportPeriod(action.period);
+                        showToast(`AI: Đã cập nhật số liệu bảng báo cáo.`);
+                    }
+                    else if (action.type === "add_to_cart") {
+                        switchTab('pos');
+                        const product = products.find(p => p.code === action.productCode);
+                        if (product) {
+                            addToCart(product);
+                            toggleCartSheet(true); // Tự động bật sheet giỏ hàng cho user xem
+                        } else {
+                            showToast(`AI lỗi: Không tìm thấy mã sản phẩm ${action.productCode}`, "error");
                         }
                     }
                 } catch (e) {
@@ -2080,7 +2140,7 @@
                     <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shrink-0 shadow-sm text-white text-xs font-bold">
                         AI
                     </div>
-                    <div class="bg-white border border-slate-200/80 p-3 rounded-2xl rounded-tl-none shadow-sm text-xs text-slate-700 max-w-[85%] leading-relaxed">
+                    <div class="bg-white border border-slate-200/80 p-3.5 rounded-2xl rounded-tl-none shadow-sm text-xs text-slate-700 max-w-[85%] leading-relaxed">
                         ${formatMarkdownLike(text)}
                     </div>
                 `;
