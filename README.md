@@ -1,9 +1,35 @@
-const IP = [
-  { id:1,sku:"IPH15PM-256-BLK",name:"iPhone 15 Pro Max 256GB",category:"iPhone",brand:"Apple",color:"Đen Titan",price:34990000,costPrice:28000000,stock:12,minStock:3,sold:47,image:"📱" },
-  { id:2,sku:"SAM-S24U-512-WHT",name:"Samsung S24 Ultra 512GB",category:"Samsung",brand:"Samsung",color:"Trắng Bạch Kim",price:31990000,costPrice:25000000,stock:8,minStock:3,sold:35,image:"📱" },
-  { id:3,sku:"OPP-FIND7-256-BLK",name:"OPPO Find X7 256GB",category:"OPPO",brand:"OPPO",color:"Đen Bóng",price:22990000,costPrice:17500000,stock:2,minStock:3,sold:28,image:"📱" },
-  { id:4,sku:"XIA-14U-256-PUR",name:"Xiaomi 14 Ultra 256GB",category:"Xiaomi",brand:"Xiaomi",color:"Tím Titan",price:23490000,costPrice:18000000,stock:15,minStock:3,sold:22,image:"📱" },
-  { id:5,sku:"VIV-X100P-256-BLU",name:"Vivo X100 Pro 256GB",category:"Vivo",brand:"Vivo",color:"Xanh Biển",price:19990000,costPrice:15500000,stock:6,minStock:3,sold:19,image:"📱" },
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Tên Dự Án Của Bạn</title>
+    
+    <meta name="description" content="Mô tả ngắn gọn về dự án để tối ưu SEO trên GitHub Pages.">
+    <meta name="author" content="Tên của bạn">
+
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+    <header>
+        <h1>Chào mừng đến với dự án</h1>
+    </header>
+
+    <main>
+        <section>
+            <h2>Giới thiệu</h2>
+            <p>Thay thế đoạn văn bản này bằng nội dung của bạn. GitHub Pages phục vụ các file HTML tĩnh với tốc độ rất nhanh và ổn định.</p>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Tên Của Bạn. Hosted on GitHub Pages.</p>
+    </footer>
+
+    <script src="./js/main.js"></script>
+</body>
+</html>
   { id:6,sku:"IPH15-128-BLU",name:"iPhone 15 128GB",category:"iPhone",brand:"Apple",color:"Xanh Lam",price:22490000,costPrice:17800000,stock:20,minStock:5,sold:62,image:"📱" },
   { id:7,sku:"SAM-A55-256-LVD",name:"Samsung A55 256GB",category:"Samsung",brand:"Samsung",color:"Xanh Tím Oải Hương",price:9990000,costPrice:7200000,stock:25,minStock:5,sold:88,image:"📱" },
   { id:8,sku:"ACC-CASE-MG-BLK",name:"Ốp lưng MagSafe iPhone 15",category:"Phụ kiện",brand:"Apple",color:"Đen",price:890000,costPrice:300000,stock:45,minStock:10,sold:120,image:"🛡️" },
