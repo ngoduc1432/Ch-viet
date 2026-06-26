@@ -1,26 +1,3 @@
-
-import { useState, useEffect, useRef, useCallback } from "react";
-import { initializeApp } from "firebase/app";
-import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "firebase/auth";
-import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
-
-// ─── FIREBASE CONFIG (SAFE INIT FOR GITHUB PAGES) ────────────────────────────
-const firebaseConfigStr = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
-let app, auth, db;
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'phoneshop-github-pages';
-
-if (firebaseConfigStr) {
-  try {
-    const firebaseConfig = JSON.parse(firebaseConfigStr);
-    app = initializeApp(firebaseConfig);
-    auth = getAuth(app);
-    db = getFirestore(app);
-  } catch (e) {
-    console.warn("Lỗi khởi tạo Firebase:", e);
-  }
-}
-
-// ─── INITIAL DATA ────────────────────────────────────────────────────────────
 const IP = [
   { id:1,sku:"IPH15PM-256-BLK",name:"iPhone 15 Pro Max 256GB",category:"iPhone",brand:"Apple",color:"Đen Titan",price:34990000,costPrice:28000000,stock:12,minStock:3,sold:47,image:"📱" },
   { id:2,sku:"SAM-S24U-512-WHT",name:"Samsung S24 Ultra 512GB",category:"Samsung",brand:"Samsung",color:"Trắng Bạch Kim",price:31990000,costPrice:25000000,stock:8,minStock:3,sold:35,image:"📱" },
