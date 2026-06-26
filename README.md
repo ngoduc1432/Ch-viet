@@ -1,33 +1,982 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Tên Dự Án Của Bạn</title>
-    
-    <meta name="description" content="Mô tả ngắn gọn về dự án để tối ưu SEO trên GitHub Pages.">
-    <meta name="author" content="Tên của bạn">
+import { useState, useEffect, useRef, useCallback } from "react";
 
-    <link rel="stylesheet" href="./css/style.css">
-</head>
-<body>
-    <header>
-        <h1>Chào mừng đến với dự án</h1>
-    </header>
+// ─── STORAGE (chuẩn hóa thành localStorage cho Web) ──────────────────────────
+const SKEY = "phoneshop_shared_v2";
+async function saveShared(data) {
+  try { localStorage.setItem(SKEY, JSON.stringify(data)); } catch {}
+}
+async function loadShared() {
+  try {
+    const r = localStorage.getItem(SKEY);
+    return r ? JSON.parse(r) : null;
+  } catch { return null; }
+}
+async function deleteShared() {
+  try { localStorage.removeItem(SKEY); } catch {}
+}
 
-    <main>
-        <section>
-            <h2>Giới thiệu</h2>
-            <p>Thay thế đoạn văn bản này bằng nội dung của bạn. GitHub Pages phục vụ các file HTML tĩnh với tốc độ rất nhanh và ổn định.</p>
-        </section>
-    </main>
+// ─── INITIAL DATA ────────────────────────────────────────────────────────────
+const IP = [
+  { id:1,sku:"IPH15PM-256-BLK",name:"iPhone 15 Pro Max 256GB",category:"iPhone",brand:"Apple",color:"Đen Titan",price:34990000,costPrice:28000000,stock:12,minStock:3,sold:47,image:"📱" },
+  { id:2,sku:"SAM-S24U-512-WHT",name:"Samsung S24 Ultra 512GB",category:"Samsung",brand:"Samsung",color:"Trắng Bạch Kim",price:31990000,costPrice:25000000,stock:8,minStock:3,sold:35,image:"📱" },
+  { id:3,sku:"OPP-FIND7-256-BLK",name:"OPPO Find X7 256GB",category:"OPPO",brand:"OPPO",color:"Đen Bóng",price:22990000,costPrice:17500000,stock:2,minStock:3,sold:28,image:"📱" },
+  { id:4,sku:"XIA-14U-256-PUR",name:"Xiaomi 14 Ultra 256GB",category:"Xiaomi",brand:"Xiaomi",color:"Tím Titan",price:23490000,costPrice:18000000,stock:15,minStock:3,sold:22,image:"📱" },
+  { id:5,sku:"VIV-X100P-256-BLU",name:"Vivo X100 Pro 256GB",category:"Vivo",brand:"Vivo",color:"Xanh Biển",price:19990000,costPrice:15500000,stock:6,minStock:3,sold:19,image:"📱" },
+  { id:6,sku:"IPH15-128-BLU",name:"iPhone 15 128GB",category:"iPhone",brand:"Apple",color:"Xanh Lam",price:22490000,costPrice:17800000,stock:20,minStock:5,sold:62,image:"📱" },
+  { id:7,sku:"SAM-A55-256-LVD",name:"Samsung A55 256GB",category:"Samsung",brand:"Samsung",color:"Xanh Tím Oải Hương",price:9990000,costPrice:7200000,stock:25,minStock:5,sold:88,image:"📱" },
+  { id:8,sku:"ACC-CASE-MG-BLK",name:"Ốp lưng MagSafe iPhone 15",category:"Phụ kiện",brand:"Apple",color:"Đen",price:890000,costPrice:300000,stock:45,minStock:10,sold:120,image:"🛡️" },
+  { id:9,sku:"ACC-CHG-65W-WHT",name:"Sạc nhanh 65W GaN",category:"Phụ kiện",brand:"Anker",color:"Trắng",price:690000,costPrice:220000,stock:38,minStock:10,sold:95,image:"🔌" },
+  { id:10,sku:"ACC-EAR-AIRP3-WHT",name:"AirPods 3 (Lightning)",category:"Tai nghe",brand:"Apple",color:"Trắng",price:4490000,costPrice:3200000,stock:18,minStock:5,sold:41,image:"🎧" },
+];
+const IC = [
+  { id:1,name:"Nguyễn Văn An",phone:"0912345678",email:"an.nguyen@gmail.com",group:"VIP",points:2450,totalSpent:68900000,orders:5,lastVisit:"2025-06-20" },
+  { id:2,name:"Trần Thị Bình",phone:"0987654321",email:"binh.tran@gmail.com",group:"Thân thiết",points:890,totalSpent:23400000,orders:3,lastVisit:"2025-06-18" },
+  { id:3,name:"Lê Minh Cường",phone:"0909123456",email:"cuong.le@gmail.com",group:"Đại lý",points:5200,totalSpent:145000000,orders:18,lastVisit:"2025-06-22" },
+  { id:4,name:"Phạm Thị Dung",phone:"0978234567",email:"dung.pham@gmail.com",group:"Khách lẻ",points:120,totalSpent:3200000,orders:1,lastVisit:"2025-06-15" },
+  { id:5,name:"Hoàng Văn Em",phone:"0965432109",email:"em.hoang@gmail.com",group:"Thân thiết",points:1340,totalSpent:34500000,orders:4,lastVisit:"2025-06-21" },
+];
+const IO = [
+  { id:"HD001",customer:"Nguyễn Văn An",items:[{name:"iPhone 15 Pro Max 256GB",qty:1,price:34990000}],total:34990000,payment:"Thẻ",status:"Hoàn thành",date:"2025-06-22 09:15" },
+  { id:"HD002",customer:"Trần Thị Bình",items:[{name:"Samsung A55 256GB",qty:1,price:9990000},{name:"Ốp lưng MagSafe",qty:1,price:890000}],total:10880000,payment:"QR",status:"Hoàn thành",date:"2025-06-22 10:32" },
+  { id:"HD003",customer:"Khách lẻ",items:[{name:"Sạc nhanh 65W GaN",qty:2,price:1380000}],total:1380000,payment:"Tiền mặt",status:"Hoàn thành",date:"2025-06-22 11:05" },
+  { id:"HD004",customer:"Lê Minh Cường",items:[{name:"Samsung S24 Ultra 512GB",qty:2,price:63980000}],total:63980000,payment:"Chuyển khoản",status:"Hoàn thành",date:"2025-06-22 13:20" },
+  { id:"HD005",customer:"Hoàng Văn Em",items:[{name:"AirPods 3",qty:1,price:4490000}],total:4490000,payment:"QR",status:"Đang xử lý",date:"2025-06-22 14:48" },
+];
+const STAFF=[
+  {id:1,name:"Nguyễn Thị Mai",role:"Quản lý",sales:145000000,commission:2.5,workDays:22,salary:12000000},
+  {id:2,name:"Trần Văn Hùng",role:"Nhân viên bán hàng",sales:89000000,commission:1.5,workDays:22,salary:8000000},
+  {id:3,name:"Phạm Thị Lan",role:"Nhân viên bán hàng",sales:67000000,commission:1.5,workDays:20,salary:8000000},
+  {id:4,name:"Lê Văn Đức",role:"Kế toán",sales:0,commission:0,workDays:22,salary:10000000},
+];
+const RD=[
+  {month:"T1",revenue:245000000,cost:185000000},{month:"T2",revenue:198000000,cost:148000000},
+  {month:"T3",revenue:312000000,cost:235000000},{month:"T4",revenue:287000000,cost:215000000},
+  {month:"T5",revenue:356000000,cost:268000000},{month:"T6",revenue:298000000,cost:223000000},
+];
 
-    <footer>
-        <p>&copy; 2026 Tên Của Bạn. Hosted on GitHub Pages.</p>
-    </footer>
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+const fmt=(n)=>new Intl.NumberFormat("vi-VN").format(n)+"đ";
+const fmtS=(n)=>{if(n>=1e9)return(n/1e9).toFixed(1)+"tỷ";if(n>=1e6)return(n/1e6).toFixed(0)+"tr";return new Intl.NumberFormat("vi-VN").format(n);};
 
-    <script src="./js/main.js"></script>
+// ─── MINI BAR CHART ──────────────────────────────────────────────────────────
+function MiniBar({data}){
+  const max=Math.max(...data.map(d=>d.revenue));
+  return(
+    <div style={{display:"flex",alignItems:"flex-end",gap:6,height:80,padding:"0 4px"}}>
+      {data.map((d,i)=>{
+        const h=Math.max(8,(d.revenue/max)*70);
+        const ph=Math.max(4,(d.cost/max)*70);
+        return(
+          <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
+            <div style={{display:"flex",alignItems:"flex-end",gap:1,height:72}}>
+              <div style={{width:8,height:h,background:"linear-gradient(180deg,#FF6B2B,#FF9A6B)",borderRadius:"3px 3px 0 0"}}/>
+              <div style={{width:8,height:ph,background:"rgba(255,255,255,0.2)",borderRadius:"3px 3px 0 0"}}/>
+            </div>
+            <span style={{fontSize:9,color:"rgba(255,255,255,0.5)"}}>{d.month}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── CHATBOT ─────────────────────────────────────────────────────────────────
+function Chatbot({products,customers,orders,onClose}){
+  const [msgs,setMsgs]=useState([{role:"bot",text:"Xin chào! Tôi là trợ lý AI của PhoneShop Pro 📱\nBạn cần hỗ trợ gì? Tôi có thể tư vấn về tồn kho, doanh thu, khách hàng, và hơn thế nữa!"}]);
+  const [input,setInput]=useState("");
+  const [loading,setLoading]=useState(false);
+  const endRef=useRef(null);
+  useEffect(()=>{endRef.current?.scrollIntoView({behavior:"smooth"});},[msgs]);
+
+  const send=async()=>{
+    const q=input.trim();
+    if(!q||loading)return;
+    setInput("");
+    setMsgs(p=>[...p,{role:"user",text:q}]);
+    setLoading(true);
+
+    const lowStock=products.filter(p=>p.stock<=p.minStock);
+    const topProducts=[...products].sort((a,b)=>b.sold-a.sold).slice(0,5);
+    const totalRevenue=orders.filter(o=>o.status==="Hoàn thành").reduce((s,o)=>s+o.total,0);
+    const context=`Bạn là trợ lý AI cho cửa hàng điện thoại PhoneShop Pro. Trả lời ngắn gọn bằng tiếng Việt.
+DỮ LIỆU THỰC TẾ:
+- Tổng sản phẩm: ${products.length} loại, tổng tồn kho: ${products.reduce((s,p)=>s+p.stock,0)} máy
+- Hàng sắp hết (${lowStock.length} mặt hàng): ${lowStock.map(p=>p.name+" (còn "+p.stock+")").join(", ")||"Không có"}
+- Top 5 bán chạy: ${topProducts.map((p,i)=>(i+1)+". "+p.name+" (đã bán "+p.sold+")").join(", ")}
+- Tổng khách hàng: ${customers.length}, VIP: ${customers.filter(c=>c.group==="VIP").length}
+- Tổng đơn hàng: ${orders.length}, doanh thu: ${fmt(totalRevenue)}
+- Sản phẩm: ${products.slice(0,5).map(p=>p.name+" giá "+fmt(p.price)+" còn "+p.stock).join("; ")}`;
+
+    try{
+      // Lưu ý: Gọi API trực tiếp từ Client side.
+      // Cần có file .env với VITE_ANTHROPIC_API_KEY
+      const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+      
+      if (!apiKey) {
+        setMsgs(p=>[...p,{role:"bot",text:"⚠️ Vui lòng cấu hình VITE_ANTHROPIC_API_KEY trong file .env để sử dụng AI."}]);
+        setLoading(false);
+        return;
+      }
+
+      const res=await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json",
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01",
+          "anthropic-dangerously-allow-browser": "true" 
+        },
+        body:JSON.stringify({
+          model:"claude-3-haiku-20240307", // Đã đổi sang haiku để chạy nhẹ/rẻ hơn
+          max_tokens:1000,
+          system:context,
+          messages:[...msgs.filter(m=>m.role!=="bot"||msgs.indexOf(m)>0).map(m=>({role:m.role==="bot"?"assistant":"user",content:m.text})),{role:"user",content:q}]
+        })
+      });
+      const data=await res.json();
+      if (data.error) throw new Error(data.error.message);
+      const reply=data.content?.map(c=>c.text||"").join("")||"Xin lỗi, tôi không hiểu câu hỏi này.";
+      setMsgs(p=>[...p,{role:"bot",text:reply}]);
+    }catch(err){
+      setMsgs(p=>[...p,{role:"bot",text:`⚠️ Lỗi: ${err.message || "Không thể kết nối AI. Vui lòng thử lại."}`}]);
+    }
+    setLoading(false);
+  };
+
+  const quickQ=["Hàng nào sắp hết?","Sản phẩm bán chạy nhất?","Doanh thu hôm nay?","Tư vấn nhập hàng?","Khách hàng VIP nào?"];
+
+  return(
+    <div style={{position:"fixed",bottom:20,right:20,width:360,height:520,background:"#0F2547",border:"1px solid rgba(255,107,43,0.3)",borderRadius:20,display:"flex",flexDirection:"column",zIndex:1000,boxShadow:"0 20px 60px rgba(0,0,0,0.5)",overflow:"hidden"}}>
+      {/* Header */}
+      <div style={{background:"linear-gradient(135deg,#FF6B2B,#FF4500)",padding:"14px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0}}>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <div style={{width:36,height:36,background:"rgba(255,255,255,0.2)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>🤖</div>
+          <div>
+            <div style={{fontWeight:700,color:"#fff",fontSize:14}}>AI Trợ lý PhoneShop</div>
+            <div style={{fontSize:10,color:"rgba(255,255,255,0.75)",display:"flex",alignItems:"center",gap:4}}>
+              <span style={{width:6,height:6,borderRadius:"50%",background:"#7FFF00",display:"inline-block"}}/>Online
+            </div>
+          </div>
+        </div>
+        <button onClick={onClose} style={{background:"rgba(255,255,255,0.2)",border:"none",borderRadius:8,padding:"6px 10px",color:"#fff",cursor:"pointer",fontSize:16}}>✕</button>
+      </div>
+
+      {/* Messages */}
+      <div style={{flex:1,overflow:"auto",padding:14,display:"flex",flexDirection:"column",gap:10}}>
+        {msgs.map((m,i)=>(
+          <div key={i} style={{display:"flex",justifyContent:m.role==="user"?"flex-end":"flex-start"}}>
+            {m.role==="bot"&&<div style={{width:28,height:28,borderRadius:8,background:"rgba(255,107,43,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0,marginRight:8}}>🤖</div>}
+            <div style={{maxWidth:"80%",padding:"10px 13px",borderRadius:m.role==="user"?"14px 14px 4px 14px":"14px 14px 14px 4px",background:m.role==="user"?"linear-gradient(135deg,#FF6B2B,#FF4500)":"rgba(255,255,255,0.08)",color:"#fff",fontSize:13,lineHeight:1.5,whiteSpace:"pre-wrap",wordBreak:"break-word"}}>
+              {m.text}
+            </div>
+          </div>
+        ))}
+        {loading&&(
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            <div style={{width:28,height:28,borderRadius:8,background:"rgba(255,107,43,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14}}>🤖</div>
+            <div style={{background:"rgba(255,255,255,0.08)",borderRadius:"14px 14px 14px 4px",padding:"10px 14px",display:"flex",gap:4}}>
+              {[0,1,2].map(i=><span key={i} style={{width:6,height:6,borderRadius:"50%",background:"#FF6B2B",display:"inline-block",animation:`bounce 1.2s ease-in-out ${i*0.2}s infinite`}}/>)}
+            </div>
+          </div>
+        )}
+        <div ref={endRef}/>
+      </div>
+
+      {/* Quick questions */}
+      <div style={{padding:"0 12px 8px",display:"flex",gap:6,flexWrap:"wrap",flexShrink:0}}>
+        {quickQ.map((q,i)=>(
+          <button key={i} onClick={()=>{setInput(q);}} style={{padding:"4px 9px",borderRadius:20,border:"1px solid rgba(255,107,43,0.3)",background:"rgba(255,107,43,0.08)",color:"rgba(255,255,255,0.7)",cursor:"pointer",fontSize:11,whiteSpace:"nowrap"}}>
+            {q}
+          </button>
+        ))}
+      </div>
+
+      {/* Input */}
+      <div style={{padding:"8px 12px 14px",display:"flex",gap:8,flexShrink:0,borderTop:"1px solid rgba(255,255,255,0.06)"}}>
+        <input
+          value={input}
+          onChange={e=>setInput(e.target.value)}
+          onKeyDown={e=>e.key==="Enter"&&send()}
+          placeholder="Nhập câu hỏi..."
+          style={{flex:1,background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:10,padding:"9px 13px",color:"#fff",fontSize:13,outline:"none"}}
+        />
+        <button onClick={send} disabled={loading||!input.trim()} style={{width:40,height:40,borderRadius:10,background:loading||!input.trim()?"rgba(255,255,255,0.08)":"linear-gradient(135deg,#FF6B2B,#FF4500)",border:"none",color:"#fff",cursor:loading||!input.trim()?"not-allowed":"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+          ➤
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── MAIN APP ────────────────────────────────────────────────────────────────
+export default function App(){
+  const [tab,setTab]=useState("dashboard");
+  const [products,setProducts]=useState(IP);
+  const [customers,setCustomers]=useState(IC);
+  const [orders,setOrders]=useState(IO);
+  const [cart,setCart]=useState([]);
+  const [searchP,setSearchP]=useState("");
+  const [searchC,setSearchC]=useState("");
+  const [selCust,setSelCust]=useState(null);
+  const [payment,setPayment]=useState("Tiền mặt");
+  const [discount,setDiscount]=useState(0);
+  const [showReceipt,setShowReceipt]=useState(false);
+  const [lastOrder,setLastOrder]=useState(null);
+  const [catFilter,setCatFilter]=useState("Tất cả");
+  const [showAddP,setShowAddP]=useState(false);
+  const [newP,setNewP]=useState({sku:"",name:"",category:"iPhone",brand:"",color:"",price:"",costPrice:"",stock:"",minStock:3,image:"📱"});
+  const [notif,setNotif]=useState(null);
+  const [sidebar,setSidebar]=useState(true);
+  const [showChat,setShowChat]=useState(false);
+  const [cacheLoaded,setCacheLoaded]=useState(false);
+  const [syncStatus,setSyncStatus]=useState(null); 
+  const [mobileNav,setMobileNav]=useState(false);
+  const saveTimer=useRef(null);
+  const isMobile=typeof window!=="undefined"&&window.innerWidth<768;
+
+  const showNotif=(msg,type="success")=>{setNotif({msg,type});setTimeout(()=>setNotif(null),3000);};
+
+  // ── LOAD SHARED CACHE ──
+  useEffect(()=>{
+    (async()=>{
+      const cached=await loadShared();
+      if(cached){
+        if(cached.products)setProducts(cached.products);
+        if(cached.customers)setCustomers(cached.customers);
+        if(cached.orders)setOrders(cached.orders);
+        if(cached.cart?.length>0)setCart(cached.cart);
+        if(cached.selCust)setSelCust(cached.selCust);
+        if(cached.payment)setPayment(cached.payment);
+        if(cached.discount!=null)setDiscount(cached.discount);
+        if(cached.newP)setNewP(cached.newP);
+        if(cached.tab)setTab(cached.tab);
+        setSyncStatus("loaded");
+        setTimeout(()=>setSyncStatus(null),2500);
+      }
+      setCacheLoaded(true);
+    })();
+  },[]);
+
+  // ── AUTO-SAVE SHARED ──
+  const save=useCallback((data)=>{
+    if(!cacheLoaded)return;
+    if(saveTimer.current)clearTimeout(saveTimer.current);
+    setSyncStatus("saving");
+    saveTimer.current=setTimeout(async()=>{
+      try{
+        await saveShared(data);
+        setSyncStatus("saved");
+        setTimeout(()=>setSyncStatus(null),2000);
+      }catch{
+        setSyncStatus("error");
+        setTimeout(()=>setSyncStatus(null),3000);
+      }
+    },1000);
+  },[cacheLoaded]);
+
+  useEffect(()=>{
+    if(!cacheLoaded)return;
+    save({products,customers,orders,cart,selCust,payment,discount,newP,tab});
+  },[products,customers,orders,cart,selCust,payment,discount,newP,tab,cacheLoaded]);
+
+  const resetCache=async()=>{
+    await deleteShared();
+    setProducts(IP);setCustomers(IC);setOrders(IO);setCart([]);
+    setSelCust(null);setPayment("Tiền mặt");setDiscount(0);
+    setNewP({sku:"",name:"",category:"iPhone",brand:"",color:"",price:"",costPrice:"",stock:"",minStock:3,image:"📱"});
+    showNotif("Đã xóa dữ liệu đồng bộ & khôi phục mặc định");
+  };
+
+  // ── CART ──
+  const addToCart=p=>{
+    if(p.stock===0){showNotif("Hết hàng!","error");return;}
+    setCart(prev=>{
+      const ex=prev.find(i=>i.id===p.id);
+      if(ex){if(ex.qty>=p.stock){showNotif("Không đủ tồn kho!","error");return prev;}return prev.map(i=>i.id===p.id?{...i,qty:i.qty+1}:i);}
+      return[...prev,{...p,qty:1}];
+    });
+  };
+  const removeFromCart=id=>setCart(p=>p.filter(i=>i.id!==id));
+  const updateQty=(id,qty)=>{
+    if(qty<=0){removeFromCart(id);return;}
+    const pr=products.find(p=>p.id===id);
+    if(qty>pr.stock){showNotif("Không đủ tồn kho!","error");return;}
+    setCart(p=>p.map(i=>i.id===id?{...i,qty}:i));
+  };
+  const cartTotal=cart.reduce((s,i)=>s+i.price*i.qty,0);
+  const discAmt=Math.round(cartTotal*(discount/100));
+  const finalTotal=cartTotal-discAmt;
+
+  const checkout=()=>{
+    if(cart.length===0){showNotif("Giỏ hàng trống!","error");return;}
+    const id="HD"+String(orders.length+1).padStart(3,"0");
+    const o={id,customer:selCust?selCust.name:"Khách lẻ",items:cart.map(i=>({name:i.name,qty:i.qty,price:i.price*i.qty})),total:finalTotal,payment,status:"Hoàn thành",date:new Date().toLocaleString("vi-VN")};
+    setOrders(p=>[o,...p]);
+    setProducts(p=>p.map(pr=>{const ci=cart.find(c=>c.id===pr.id);return ci?{...pr,stock:pr.stock-ci.qty,sold:pr.sold+ci.qty}:pr;}));
+    if(selCust){const pts=Math.floor(finalTotal/100000);setCustomers(p=>p.map(c=>c.id===selCust.id?{...c,points:c.points+pts,totalSpent:c.totalSpent+finalTotal,orders:c.orders+1}:c));}
+    setLastOrder(o);setCart([]);setSelCust(null);setDiscount(0);setShowReceipt(true);
+    showNotif(`Thanh toán thành công ${fmt(finalTotal)}!`);
+  };
+
+  const addProduct=()=>{
+    if(!newP.sku||!newP.name||!newP.price){showNotif("Vui lòng điền đầy đủ!","error");return;}
+    const p={...newP,id:products.length+1,price:+newP.price,costPrice:+newP.costPrice,stock:+newP.stock,minStock:+newP.minStock,sold:0};
+    setProducts(prev=>[p,...prev]);
+    setShowAddP(false);
+    setNewP({sku:"",name:"",category:"iPhone",brand:"",color:"",price:"",costPrice:"",stock:"",minStock:3,image:"📱"});
+    showNotif("Thêm sản phẩm thành công!");
+  };
+
+  const cats=["Tất cả",...new Set(products.map(p=>p.category))];
+  const filteredP=products.filter(p=>{
+    const mc=catFilter==="Tất cả"||p.category===catFilter;
+    const ms=p.name.toLowerCase().includes(searchP.toLowerCase())||p.sku.toLowerCase().includes(searchP.toLowerCase());
+    return mc&&ms;
+  });
+  const lowStock=products.filter(p=>p.stock<=p.minStock);
+  const todayRev=orders.filter(o=>o.status==="Hoàn thành").reduce((s,o)=>s+o.total,0);
+  const totalProfit=RD.reduce((s,d)=>s+(d.revenue-d.cost),0);
+
+  const navItems=[
+    {id:"dashboard",icon:"📊",label:"Tổng quan"},
+    {id:"pos",icon:"🛒",label:"Bán hàng"},
+    {id:"products",icon:"📦",label:"Hàng hóa"},
+    {id:"orders",icon:"🧾",label:"Hóa đơn"},
+    {id:"customers",icon:"👥",label:"Khách hàng"},
+    {id:"staff",icon:"👔",label:"Nhân sự"},
+    {id:"reports",icon:"📈",label:"Báo cáo"},
+  ];
+
+  const syncCfg={
+    saving:{bg:"rgba(255,149,0,0.12)",border:"rgba(255,149,0,0.3)",color:"#FF9500",label:"☁️ Đang lưu…",spin:true},
+    saved:{bg:"rgba(52,199,89,0.12)",border:"rgba(52,199,89,0.3)",color:"#34C759",label:"☁️ Đã lưu"},
+    loaded:{bg:"rgba(0,122,255,0.12)",border:"rgba(0,122,255,0.3)",color:"#007AFF",label:"📲 Đã khôi phục"},
+    error:{bg:"rgba(255,59,48,0.12)",border:"rgba(255,59,48,0.3)",color:"#FF3B30",label:"⚠️ Lỗi lưu"},
+  }[syncStatus]||null;
+
+  if(showReceipt&&lastOrder){
+    return(
+      <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:9999,padding:16}}>
+        <style>{`@keyframes popIn{from{opacity:0;transform:scale(0.85)}to{opacity:1;transform:scale(1)}}`}</style>
+        <div style={{background:"#132040",borderRadius:20,padding:28,width:"100%",maxWidth:380,border:"1px solid rgba(255,255,255,0.1)",boxShadow:"0 20px 60px rgba(0,0,0,0.5)",animation:"popIn 0.3s ease"}}>
+          <div style={{textAlign:"center",marginBottom:20}}>
+            <div style={{fontSize:52}}>✅</div>
+            <div style={{fontSize:20,fontWeight:800,color:"#fff",marginTop:6}}>Thanh toán thành công!</div>
+            <div style={{fontSize:13,color:"rgba(255,255,255,0.4)",marginTop:3}}>Hóa đơn #{lastOrder.id}</div>
+          </div>
+          <div style={{background:"rgba(255,255,255,0.04)",borderRadius:12,padding:14,marginBottom:16}}>
+            {lastOrder.items.map((item,i)=>(
+              <div key={i} style={{display:"flex",justifyContent:"space-between",marginBottom:6,fontSize:13}}>
+                <span style={{color:"rgba(255,255,255,0.7)"}}>{item.name}</span>
+                <span style={{color:"#fff",fontWeight:600}}>{fmt(item.price)}</span>
+              </div>
+            ))}
+            <div style={{height:1,background:"rgba(255,255,255,0.08)",margin:"10px 0"}}/>
+            <div style={{display:"flex",justifyContent:"space-between",fontWeight:800,fontSize:16}}>
+              <span style={{color:"#fff"}}>Tổng cộng</span>
+              <span style={{color:"#FF6B2B"}}>{fmt(lastOrder.total)}</span>
+            </div>
+            <div style={{marginTop:6,fontSize:11,color:"rgba(255,255,255,0.35)"}}>Thanh toán: {lastOrder.payment} • {lastOrder.date}</div>
+          </div>
+          <button onClick={()=>setShowReceipt(false)} style={{width:"100%",padding:13,background:"linear-gradient(135deg,#FF6B2B,#FF4500)",border:"none",borderRadius:12,color:"#fff",fontWeight:700,fontSize:15,cursor:"pointer"}}>
+            Hóa đơn mới
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const C="#0B1629",C2="#0F2547",C3="#132040";
+  const inp={background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:10,padding:"9px 13px",color:"#fff",fontSize:13,outline:"none",width:"100%",boxSizing:"border-box"};
+  const card={background:C3,border:"1px solid rgba(255,255,255,0.07)",borderRadius:14,padding:20};
+  const tag=(cl)=>({padding:"2px 8px",borderRadius:6,fontSize:11,fontWeight:600,background:cl+"22",color:cl});
+  const btnP={background:"linear-gradient(135deg,#FF6B2B,#FF4500)",color:"#fff",border:"none",borderRadius:10,padding:"10px 18px",cursor:"pointer",fontSize:13,fontWeight:700,boxShadow:"0 4px 14px rgba(255,107,43,0.35)"};
+  const btnS={background:"rgba(255,255,255,0.06)",color:"rgba(255,255,255,0.7)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:9,padding:"9px 16px",cursor:"pointer",fontSize:13,fontWeight:500};
+  const th={textAlign:"left",padding:"10px 14px",fontSize:11,color:"rgba(255,255,255,0.4)",fontWeight:600,textTransform:"uppercase",letterSpacing:0.6,borderBottom:"1px solid rgba(255,255,255,0.07)"};
+  const td={padding:"12px 14px",fontSize:13,color:"rgba(255,255,255,0.8)",borderBottom:"1px solid rgba(255,255,255,0.04)"};
+
+  const NAV_W=sidebar?220:64;
+
+  return(
+    <div style={{display:"flex",height:"100vh",background:C,fontFamily:"'Inter',-apple-system,sans-serif",color:"#E8EDF5",overflow:"hidden",position:"relative"}}>
+      <style>{`
+        *{box-sizing:border-box;}
+        ::-webkit-scrollbar{width:4px;height:4px;}
+        ::-webkit-scrollbar-track{background:transparent;}
+        ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px;}
+        @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+        @keyframes slideIn{from{transform:translateX(-100%)}to{transform:translateX(0)}}
+        @media(max-width:767px){
+          .desktop-only{display:none!important;}
+          .mobile-table{display:block!important;}
+        }
+        @media(min-width:768px){
+          .mobile-only{display:none!important;}
+        }
+        button:hover{opacity:0.88;}
+      `}</style>
+
+      {mobileNav&&(
+        <div style={{position:"fixed",inset:0,zIndex:200}}>
+          <div onClick={()=>setMobileNav(false)} style={{position:"absolute",inset:0,background:"rgba(0,0,0,0.6)"}}/>
+          <aside style={{position:"absolute",left:0,top:0,bottom:0,width:240,background:C2,borderRight:"1px solid rgba(255,255,255,0.06)",display:"flex",flexDirection:"column",animation:"slideIn 0.2s ease",zIndex:201}}>
+            <div style={{padding:"20px 16px 14px",borderBottom:"1px solid rgba(255,255,255,0.06)",display:"flex",alignItems:"center",gap:10}}>
+              <div style={{width:36,height:36,background:"linear-gradient(135deg,#FF6B2B,#FF9A6B)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>📱</div>
+              <div><div style={{fontWeight:800,fontSize:15,color:"#fff"}}>PhoneShop Pro</div><div style={{fontSize:10,color:"rgba(255,255,255,0.4)"}}>Quản lý bán hàng</div></div>
+            </div>
+            <nav style={{flex:1,padding:"12px 8px",display:"flex",flexDirection:"column",gap:2}}>
+              {navItems.map(item=>(
+                <button key={item.id} onClick={()=>{setTab(item.id);setMobileNav(false);}} style={{display:"flex",alignItems:"center",gap:10,padding:"11px 14px",borderRadius:10,border:"none",cursor:"pointer",background:tab===item.id?"rgba(255,107,43,0.15)":"transparent",color:tab===item.id?"#FF6B2B":"rgba(255,255,255,0.55)",fontSize:14,fontWeight:tab===item.id?600:400,width:"100%",textAlign:"left",borderLeft:tab===item.id?"3px solid #FF6B2B":"3px solid transparent"}}>
+                  <span style={{fontSize:18}}>{item.icon}</span>{item.label}
+                  {item.id==="products"&&lowStock.length>0&&<span style={{marginLeft:"auto",background:"#FF3B30",color:"#fff",borderRadius:10,padding:"1px 7px",fontSize:10,fontWeight:700}}>{lowStock.length}</span>}
+                </button>
+              ))}
+            </nav>
+            <div style={{padding:"12px 16px",borderTop:"1px solid rgba(255,255,255,0.06)"}}>
+              <button onClick={()=>{resetCache();setMobileNav(false);}} style={{...btnS,width:"100%",fontSize:12,padding:"8px 12px"}}>🗑️ Xóa dữ liệu đồng bộ</button>
+            </div>
+          </aside>
+        </div>
+      )}
+
+      <aside className="desktop-only" style={{width:NAV_W,background:C2,display:"flex",flexDirection:"column",transition:"width 0.25s ease",flexShrink:0,borderRight:"1px solid rgba(255,255,255,0.06)"}}>
+        <div style={{padding:sidebar?"20px 20px 14px":"20px 12px 14px",borderBottom:"1px solid rgba(255,255,255,0.06)",display:"flex",alignItems:"center",gap:10}}>
+          <div style={{width:36,height:36,background:"linear-gradient(135deg,#FF6B2B,#FF9A6B)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>📱</div>
+          {sidebar&&<div><div style={{fontWeight:800,fontSize:15,color:"#fff",whiteSpace:"nowrap"}}>PhoneShop Pro</div><div style={{fontSize:10,color:"rgba(255,255,255,0.4)"}}>Quản lý bán hàng</div></div>}
+        </div>
+        <nav style={{flex:1,padding:"12px 8px",display:"flex",flexDirection:"column",gap:2}}>
+          {navItems.map(item=>(
+            <button key={item.id} onClick={()=>setTab(item.id)} style={{display:"flex",alignItems:"center",gap:10,padding:sidebar?"10px 12px":"10px",borderRadius:10,border:"none",cursor:"pointer",background:tab===item.id?"rgba(255,107,43,0.15)":"transparent",color:tab===item.id?"#FF6B2B":"rgba(255,255,255,0.55)",fontSize:13.5,fontWeight:tab===item.id?600:400,width:"100%",textAlign:"left",borderLeft:tab===item.id?"3px solid #FF6B2B":"3px solid transparent",transition:"all 0.15s"}}>
+              <span style={{fontSize:17,flexShrink:0}}>{item.icon}</span>
+              {sidebar&&<><span style={{whiteSpace:"nowrap"}}>{item.label}</span>{item.id==="products"&&lowStock.length>0&&<span style={{marginLeft:"auto",background:"#FF3B30",color:"#fff",borderRadius:10,padding:"1px 7px",fontSize:10,fontWeight:700}}>{lowStock.length}</span>}</>}
+            </button>
+          ))}
+        </nav>
+        <button onClick={()=>setSidebar(!sidebar)} style={{margin:"0 8px 12px",padding:"8px",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:8,cursor:"pointer",color:"rgba(255,255,255,0.4)",fontSize:13,textAlign:"center"}}>
+          {sidebar?"◀":"▶"}
+        </button>
+        {sidebar&&<div style={{padding:"0 12px 14px",fontSize:11,color:"rgba(255,255,255,0.25)",textAlign:"center"}}>Chi nhánh: Cầu Giấy, HN</div>}
+      </aside>
+
+      <main style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",minWidth:0}}>
+        <header style={{padding:"12px 16px",background:C2,borderBottom:"1px solid rgba(255,255,255,0.06)",display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,flexShrink:0}}>
+          <div style={{display:"flex",alignItems:"center",gap:12}}>
+            <button className="mobile-only" onClick={()=>setMobileNav(true)} style={{background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:9,padding:"8px 11px",cursor:"pointer",color:"#fff",fontSize:16}}>☰</button>
+            <div>
+              <div style={{fontSize:16,fontWeight:700,color:"#fff"}}>{navItems.find(n=>n.id===tab)?.label}</div>
+              <div style={{fontSize:10,color:"rgba(255,255,255,0.35)"}}>{new Date().toLocaleDateString("vi-VN",{weekday:"long",year:"numeric",month:"long",day:"numeric"})}</div>
+            </div>
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
+            {syncCfg&&(
+              <div style={{background:syncCfg.bg,border:`1px solid ${syncCfg.border}`,borderRadius:8,padding:"5px 10px",fontSize:11,color:syncCfg.color,display:"flex",alignItems:"center",gap:5,whiteSpace:"nowrap"}}>
+                {syncCfg.spin&&<span style={{display:"inline-block",animation:"spin 1s linear infinite"}}>⟳</span>}
+                {syncCfg.label}
+              </div>
+            )}
+            {lowStock.length>0&&(
+              <div className="desktop-only" style={{background:"rgba(255,59,48,0.12)",border:"1px solid rgba(255,59,48,0.3)",borderRadius:8,padding:"5px 10px",fontSize:11,color:"#FF3B30",whiteSpace:"nowrap"}}>
+                ⚠️ {lowStock.length} sắp hết
+              </div>
+            )}
+            <button className="desktop-only" onClick={resetCache} title="Xóa dữ liệu" style={{background:"rgba(255,59,48,0.1)",border:"1px solid rgba(255,59,48,0.2)",borderRadius:8,padding:"7px 10px",cursor:"pointer",color:"rgba(255,100,100,0.7)",fontSize:13}}>🗑️</button>
+            <div style={{display:"flex",alignItems:"center",gap:7,background:"rgba(255,255,255,0.05)",padding:"7px 10px",borderRadius:10,border:"1px solid rgba(255,255,255,0.08)"}}>
+              <div style={{width:28,height:28,background:"linear-gradient(135deg,#FF6B2B,#FF9A6B)",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13}}>👤</div>
+              <div className="desktop-only">
+                <div style={{fontSize:11,fontWeight:600,color:"#fff"}}>Nguyễn Thị Mai</div>
+                <div style={{fontSize:9,color:"rgba(255,255,255,0.4)"}}>Quản lý</div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div style={{flex:1,overflow:"auto",padding:"16px"}}>
+          {tab==="dashboard"&&(
+            <div>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:12,marginBottom:16}}>
+                {[
+                  {label:"Doanh thu",value:fmtS(todayRev)+"đ",icon:"💰",accent:"#FF6B2B",sub:`${orders.filter(o=>o.status==="Hoàn thành").length} đơn hoàn thành`},
+                  {label:"Đơn hàng",value:orders.length,icon:"🧾",accent:"#007AFF",sub:"Hôm nay"},
+                  {label:"Tổng tồn kho",value:products.reduce((s,p)=>s+p.stock,0),icon:"📦",accent:"#34C759",sub:`${lowStock.length} cần nhập`},
+                  {label:"Lợi nhuận T6",value:fmtS(totalProfit)+"đ",icon:"📈",accent:"#AF52DE",sub:"Tỷ suất 25.3%"},
+                ].map((s,i)=>(
+                  <div key={i} style={{background:`linear-gradient(135deg,${s.accent}22,${s.accent}08)`,border:`1px solid ${s.accent}30`,borderRadius:14,padding:16}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+                      <div>
+                        <div style={{fontSize:10,color:"rgba(255,255,255,0.4)",textTransform:"uppercase",letterSpacing:0.7,fontWeight:600}}>{s.label}</div>
+                        <div style={{fontSize:22,fontWeight:800,color:s.accent,lineHeight:1.2,marginTop:4}}>{s.value}</div>
+                        <div style={{fontSize:10,color:"rgba(255,255,255,0.4)",marginTop:3}}>{s.sub}</div>
+                      </div>
+                      <div style={{fontSize:24}}>{s.icon}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"minmax(0,2fr) minmax(0,1fr)",gap:12,marginBottom:12}}>
+                <div style={card}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+                    <div style={{fontSize:14,fontWeight:700,color:"#fff"}}>Doanh thu 6 tháng</div>
+                    <div style={{display:"flex",gap:8,fontSize:10}}><span style={tag("#FF6B2B")}>■ Doanh thu</span><span style={tag("rgba(255,255,255,0.4)")}>■ Chi phí</span></div>
+                  </div>
+                  <MiniBar data={RD}/>
+                  <div style={{height:1,background:"rgba(255,255,255,0.06)",margin:"12px 0"}}/>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
+                    {[{l:"Tổng DT",v:fmtS(RD.reduce((s,d)=>s+d.revenue,0))+"đ"},{l:"Chi phí",v:fmtS(RD.reduce((s,d)=>s+d.cost,0))+"đ"},{l:"LN",v:fmtS(totalProfit)+"đ"}].map((m,i)=>(
+                      <div key={i} style={{textAlign:"center",padding:8,background:"rgba(255,255,255,0.03)",borderRadius:8}}>
+                        <div style={{fontSize:9,color:"rgba(255,255,255,0.4)",marginBottom:2}}>{m.l}</div>
+                        <div style={{fontSize:13,fontWeight:700,color:"#FF6B2B"}}>{m.v}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div style={card}>
+                  <div style={{fontSize:14,fontWeight:700,color:"#fff",marginBottom:12}}>Top bán chạy</div>
+                  {[...products].sort((a,b)=>b.sold-a.sold).slice(0,5).map((p,i)=>{
+                    const mx=Math.max(...products.map(x=>x.sold));
+                    return(
+                      <div key={p.id} style={{marginBottom:10}}>
+                        <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
+                          <div style={{fontSize:11,color:"rgba(255,255,255,0.7)",display:"flex",alignItems:"center",gap:5}}>
+                            <span style={{fontSize:9,fontWeight:700,color:i<3?"#FF6B2B":"rgba(255,255,255,0.3)",width:14}}>#{i+1}</span>
+                            <span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:110}}>{p.name}</span>
+                          </div>
+                          <span style={{fontSize:10,color:"#FF6B2B",fontWeight:700,flexShrink:0}}>{p.sold}</span>
+                        </div>
+                        <div style={{height:3,background:"rgba(255,255,255,0.06)",borderRadius:2}}>
+                          <div style={{height:"100%",width:`${(p.sold/mx)*100}%`,background:i<3?"linear-gradient(90deg,#FF6B2B,#FF9A6B)":"rgba(255,255,255,0.2)",borderRadius:2}}/>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"minmax(0,1fr) minmax(0,1fr)",gap:12}}>
+                <div style={card}>
+                  <div style={{fontSize:14,fontWeight:700,color:"#fff",marginBottom:12}}>Hóa đơn gần nhất</div>
+                  {orders.slice(0,4).map(o=>(
+                    <div key={o.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"9px 0",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
+                      <div>
+                        <div style={{fontSize:12,fontWeight:700,color:"#FF6B2B"}}>{o.id}</div>
+                        <div style={{fontSize:11,color:"rgba(255,255,255,0.45)"}}>{o.customer}</div>
+                      </div>
+                      <div style={{textAlign:"right"}}>
+                        <div style={{fontSize:12,fontWeight:700,color:"#fff"}}>{fmtS(o.total)}đ</div>
+                        <span style={tag(o.status==="Hoàn thành"?"#34C759":"#FF9500")}>{o.status}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div style={card}>
+                  <div style={{fontSize:14,fontWeight:700,color:"#fff",marginBottom:12}}>⚠️ Sắp hết hàng</div>
+                  {lowStock.length===0?<div style={{textAlign:"center",padding:20,color:"rgba(255,255,255,0.3)",fontSize:13}}>✅ Tồn kho ổn định</div>:
+                    lowStock.map(p=>(
+                      <div key={p.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"9px 0",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
+                        <div style={{fontSize:12,color:"#fff",fontWeight:500,maxWidth:"70%",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.name}</div>
+                        <div style={{textAlign:"right",flexShrink:0}}>
+                          <div style={{fontSize:16,fontWeight:800,color:p.stock===0?"#FF3B30":"#FF9500"}}>{p.stock}</div>
+                          <div style={{fontSize:9,color:"rgba(255,255,255,0.3)"}}>tối thiểu {p.minStock}</div>
+                        </div>
+                      </div>
+                    ))
+                  }
+                </div>
+              </div>
+            </div>
+          )}
+
+          {tab==="pos"&&(
+            <div style={{display:"grid",gridTemplateColumns:"minmax(0,1fr) 340px",gap:14,height:"calc(100vh - 120px)"}}>
+              <div style={{display:"flex",flexDirection:"column",gap:10,overflow:"hidden",minWidth:0}}>
+                <div style={{display:"flex",gap:8}}>
+                  <input style={{...inp,flex:1}} placeholder="🔍 Tìm sản phẩm, mã SKU…" value={searchP} onChange={e=>setSearchP(e.target.value)}/>
+                  <select style={{...inp,width:130}} value={catFilter} onChange={e=>setCatFilter(e.target.value)}>
+                    {cats.map(c=><option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(150px,1fr))",gap:8,overflow:"auto",paddingBottom:4}}>
+                  {filteredP.map(p=>(
+                    <button key={p.id} onClick={()=>addToCart(p)} style={{background:p.stock===0?"rgba(255,255,255,0.02)":C3,border:p.stock===0?"1px solid rgba(255,255,255,0.04)":"1px solid rgba(255,255,255,0.08)",borderRadius:12,padding:12,cursor:p.stock===0?"not-allowed":"textAlign","left",opacity:p.stock===0?0.4:1,transition:"all 0.15s"}}>
+                      <div style={{fontSize:26,marginBottom:5}}>{p.image}</div>
+                      <div style={{fontSize:11,fontWeight:600,color:"#fff",lineHeight:1.3,marginBottom:3}}>{p.name.length>28?p.name.slice(0,28)+"…":p.name}</div>
+                      <div style={{fontSize:13,fontWeight:800,color:"#FF6B2B",marginBottom:4}}>{fmtS(p.price)}đ</div>
+                      <span style={tag(p.stock===0?"#FF3B30":p.stock<=p.minStock?"#FF9500":"#34C759")}>{p.stock===0?"Hết":`${p.stock} còn`}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div style={{...card,display:"flex",flexDirection:"column",overflow:"hidden",minWidth:0}}>
+                <div style={{fontSize:14,fontWeight:700,color:"#fff",marginBottom:10}}>🛒 Hóa đơn</div>
+                <select style={{...inp,marginBottom:10}} value={selCust?.id||""} onChange={e=>setSelCust(customers.find(c=>c.id===+e.target.value)||null)}>
+                  <option value="">👤 Khách lẻ</option>
+                  {customers.map(c=><option key={c.id} value={c.id}>{c.name} — {c.points} điểm</option>)}
+                </select>
+                <div style={{flex:1,overflow:"auto"}}>
+                  {cart.length===0?<div style={{textAlign:"center",padding:"30px 10px",color:"rgba(255,255,255,0.2)"}}>
+                    <div style={{fontSize:36,marginBottom:6}}>🛒</div>
+                    <div style={{fontSize:12}}>Chọn sản phẩm bên trái</div>
+                  </div>:cart.map(item=>(
+                    <div key={item.id} style={{padding:"9px 0",borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+                        <div style={{flex:1,marginRight:6}}>
+                          <div style={{fontSize:11,fontWeight:600,color:"#fff",lineHeight:1.3}}>{item.name}</div>
+                          <div style={{fontSize:11,color:"#FF6B2B",marginTop:2}}>{fmt(item.price)}</div>
+                        </div>
+                        <button onClick={()=>removeFromCart(item.id)} style={{background:"none",border:"none",color:"rgba(255,255,255,0.3)",cursor:"pointer",fontSize:16,padding:2}}>×</button>
+                      </div>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:6}}>
+                        <div style={{display:"flex",alignItems:"center",gap:4}}>
+                          <button onClick={()=>updateQty(item.id,item.qty-1)} style={{width:26,height:26,borderRadius:6,background:"rgba(255,255,255,0.08)",border:"none",color:"#fff",cursor:"pointer",fontSize:15}}>−</button>
+                          <span style={{width:26,textAlign:"center",fontSize:13,fontWeight:700,color:"#fff"}}>{item.qty}</span>
+                          <button onClick={()=>updateQty(item.id,item.qty+1)} style={{width:26,height:26,borderRadius:6,background:"rgba(255,255,255,0.08)",border:"none",color:"#fff",cursor:"pointer",fontSize:15}}>+</button>
+                        </div>
+                        <span style={{fontSize:13,fontWeight:800,color:"#fff"}}>{fmt(item.price*item.qty)}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{marginTop:10}}>
+                  <div style={{height:1,background:"rgba(255,255,255,0.06)",marginBottom:10}}/>
+                  <div style={{display:"flex",gap:5,marginBottom:10}}>
+                    {["Tiền mặt","Thẻ","QR","CK"].map(m=>(
+                      <button key={m} onClick={()=>setPayment(m==="CK"?"Chuyển khoản":m)} style={{flex:1,padding:"6px 2px",borderRadius:8,border:`1px solid ${payment===(m==="CK"?"Chuyển khoản":m)?"#FF6B2B":"rgba(255,255,255,0.1)"}`,background:payment===(m==="CK"?"Chuyển khoản":m)?"rgba(255,107,43,0.15)":"transparent",color:payment===(m==="CK"?"Chuyển khoản":m)?"#FF6B2B":"rgba(255,255,255,0.4)",cursor:"pointer",fontSize:10,fontWeight:600}}>
+                        {m==="Tiền mặt"?"💵":m==="Thẻ"?"💳":m==="QR"?"📲":"🏦"} {m}
+                      </button>
+                    ))}
+                  </div>
+                  <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
+                    <span style={{fontSize:11,color:"rgba(255,255,255,0.4)",flexShrink:0}}>Chiết khấu %</span>
+                    <input type="number" style={{...inp,width:60}} value={discount} onChange={e=>setDiscount(Math.min(100,Math.max(0,+e.target.value)))} min="0" max="100"/>
+                    <div style={{display:"flex",gap:4,flex:1}}>
+                      {[5,10,15].map(d=><button key={d} onClick={()=>setDiscount(d)} style={{flex:1,padding:"5px 2px",borderRadius:6,border:"1px solid rgba(255,255,255,0.08)",background:"rgba(255,255,255,0.04)",color:"rgba(255,255,255,0.5)",cursor:"pointer",fontSize:10}}>{d}%</button>)}
+                    </div>
+                  </div>
+                  <div style={{background:"rgba(255,255,255,0.04)",borderRadius:10,padding:10,marginBottom:10}}>
+                    <div style={{display:"flex",justifyContent:"space-between",fontSize:11,marginBottom:3}}>
+                      <span style={{color:"rgba(255,255,255,0.45)"}}>Tạm tính</span><span>{fmt(cartTotal)}</span>
+                    </div>
+                    {discount>0&&<div style={{display:"flex",justifyContent:"space-between",fontSize:11,marginBottom:3}}>
+                      <span style={{color:"rgba(255,255,255,0.45)"}}>Chiết khấu</span><span style={{color:"#34C759"}}>−{fmt(discAmt)}</span>
+                    </div>}
+                    <div style={{display:"flex",justifyContent:"space-between",fontWeight:800,fontSize:15,paddingTop:6,borderTop:"1px solid rgba(255,255,255,0.08)",marginTop:4}}>
+                      <span style={{color:"#fff"}}>Tổng cộng</span><span style={{color:"#FF6B2B"}}>{fmt(finalTotal)}</span>
+                    </div>
+                  </div>
+                  <button onClick={checkout} style={{...btnP,width:"100%",padding:12,fontSize:14,textAlign:"center"}}>
+                    💳 Thanh toán{cart.length>0?` (${cart.length})`:""}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {tab==="products"&&(
+            <div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:8,justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+                <div style={{display:"flex",gap:8,flex:1,minWidth:0}}>
+                  <input style={{...inp,maxWidth:240}} placeholder="🔍 Tìm tên, SKU…" value={searchP} onChange={e=>setSearchP(e.target.value)}/>
+                  <select style={{...inp,width:130}} value={catFilter} onChange={e=>setCatFilter(e.target.value)}>
+                    {cats.map(c=><option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <button onClick={()=>setShowAddP(true)} style={btnP}>+ Thêm SP</button>
+              </div>
+              {showAddP&&(
+                <div style={{...card,marginBottom:14,border:"1px solid rgba(255,107,43,0.3)"}}>
+                  <div style={{fontSize:14,fontWeight:700,color:"#FF6B2B",marginBottom:12,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                    <span>➕ Thêm sản phẩm mới</span>
+                  </div>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:10,marginBottom:12}}>
+                    {[{l:"Mã SKU *",k:"sku",ph:"VD: IPH15-BLK"},{l:"Tên sản phẩm *",k:"name",ph:"VD: iPhone 15"},{l:"Thương hiệu",k:"brand",ph:"Apple"},{l:"Màu sắc",k:"color",ph:"Đen Titan"},{l:"Giá bán *",k:"price",ph:"22490000",t:"number"},{l:"Giá vốn",k:"costPrice",ph:"17800000",t:"number"},{l:"Tồn kho",k:"stock",ph:"10",t:"number"},{l:"Tối thiểu",k:"minStock",ph:"3",t:"number"}].map(f=>(
+                      <div key={f.k}>
+                        <div style={{fontSize:10,color:"rgba(255,255,255,0.4)",marginBottom:3}}>{f.l}</div>
+                        <input type={f.t||"text"} style={inp} placeholder={f.ph} value={newP[f.k]} onChange={e=>setNewP(p=>({...p,[f.k]:e.target.value}))}/>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
+                    <div style={{fontSize:10,color:"rgba(255,255,255,0.4)"}}>Danh mục:</div>
+                    <select style={{...inp,width:140}} value={newP.category} onChange={e=>setNewP(p=>({...p,category:e.target.value}))}>
+                      {["iPhone","Samsung","OPPO","Xiaomi","Vivo","Realme","Phụ kiện","Tai nghe","Khác"].map(c=><option key={c} value={c}>{c}</option>)}
+                    </select>
+                    <div style={{fontSize:10,color:"rgba(255,255,255,0.4)"}}>Icon:</div>
+                    <select style={{...inp,width:90}} value={newP.image} onChange={e=>setNewP(p=>({...p,image:e.target.value}))}>
+                      {["📱","🎧","🔌","🛡️","⌚","💻"].map(ic=><option key={ic} value={ic}>{ic}</option>)}
+                    </select>
+                  </div>
+                  <div style={{display:"flex",gap:8}}>
+                    <button onClick={addProduct} style={btnP}>✅ Lưu sản phẩm</button>
+                    <button onClick={()=>setShowAddP(false)} style={btnS}>Hủy</button>
+                  </div>
+                </div>
+              )}
+              <div style={{...card,overflow:"auto"}}>
+                <table style={{width:"100%",borderCollapse:"collapse"}}>
+                  <thead>
+                    <tr>
+                      <th style={th}>Sản phẩm</th>
+                      <th style={{...th}} className="desktop-only">SKU</th>
+                      <th style={th}>Giá bán</th>
+                      <th style={th}>Biên lợi</th>
+                      <th style={th}>Tồn kho</th>
+                      <th style={th}>Đã bán</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredP.map(p=>{
+                      const mg=Math.round(((p.price-p.costPrice)/p.price)*100);
+                      const sc=p.stock===0?"#FF3B30":p.stock<=p.minStock?"#FF9500":"#34C759";
+                      return(
+                        <tr key={p.id}>
+                          <td style={td}>
+                            <div style={{display:"flex",alignItems:"center",gap:8}}>
+                              <span style={{fontSize:20}}>{p.image}</span>
+                              <div>
+                                <div style={{fontWeight:600,color:"#fff",fontSize:12}}>{p.name}</div>
+                                <div style={{fontSize:10,color:"rgba(255,255,255,0.4)"}}>{p.color}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td style={{...td,fontFamily:"monospace",fontSize:10,color:"rgba(255,255,255,0.4)"}} className="desktop-only">{p.sku}</td>
+                          <td style={{...td,fontWeight:700,color:"#fff"}}>{fmtS(p.price)}đ</td>
+                          <td style={td}><span style={tag(mg>=25?"#34C759":mg>=15?"#FF9500":"#FF3B30")}>{mg}%</span></td>
+                          <td style={td}><span style={{fontWeight:800,color:sc,fontSize:15}}>{p.stock}</span>{p.stock<=p.minStock&&<span style={{marginLeft:4}}>{p.stock===0?"🔴":"🟡"}</span>}</td>
+                          <td style={{...td,fontWeight:600,color:"#FF6B2B"}}>{p.sold}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {tab==="orders"&&(
+            <div style={card}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,flexWrap:"wrap",gap:8}}>
+                <div style={{fontSize:14,fontWeight:700,color:"#fff"}}>Danh sách hóa đơn ({orders.length})</div>
+              </div>
+              <div style={{overflow:"auto"}}>
+                <table style={{width:"100%",borderCollapse:"collapse"}}>
+                  <thead><tr>
+                    <th style={th}>Mã HĐ</th>
+                    <th style={{...th}} className="desktop-only">Thời gian</th>
+                    <th style={th}>Khách</th>
+                    <th style={{...th}} className="desktop-only">TT</th>
+                    <th style={th}>Tổng tiền</th>
+                    <th style={th}>Trạng thái</th>
+                  </tr></thead>
+                  <tbody>
+                    {orders.map(o=>(
+                      <tr key={o.id}>
+                        <td style={{...td,fontWeight:800,color:"#FF6B2B",fontFamily:"monospace"}}>{o.id}</td>
+                        <td style={{...td,fontSize:10,color:"rgba(255,255,255,0.4)"}} className="desktop-only">{o.date}</td>
+                        <td style={td}>{o.customer}</td>
+                        <td style={td} className="desktop-only"><span style={{fontSize:12}}>{o.payment==="Tiền mặt"?"💵":o.payment==="Thẻ"?"💳":o.payment==="QR"?"📲":"🏦"}</span> {o.payment}</td>
+                        <td style={{...td,fontWeight:800,color:"#fff"}}>{fmtS(o.total)}đ</td>
+                        <td style={td}><span style={tag(o.status==="Hoàn thành"?"#34C759":"#FF9500")}>{o.status}</span></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {tab==="customers"&&(
+            <div>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(130px,1fr))",gap:10,marginBottom:14}}>
+                {[{l:"Tổng KH",v:customers.length,i:"👥"},{l:"VIP",v:customers.filter(c=>c.group==="VIP").length,i:"⭐"},{l:"Đại lý",v:customers.filter(c=>c.group==="Đại lý").length,i:"🏪"},{l:"DT từ KH",v:fmtS(customers.reduce((s,c)=>s+c.totalSpent,0))+"đ",i:"💰"}].map((s,i)=>(
+                  <div key={i} style={{...card,textAlign:"center"}}>
+                    <div style={{fontSize:22,marginBottom:4}}>{s.i}</div>
+                    <div style={{fontSize:18,fontWeight:800,color:"#FF6B2B"}}>{s.v}</div>
+                    <div style={{fontSize:10,color:"rgba(255,255,255,0.4)"}}>{s.l}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={card}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12,flexWrap:"wrap",gap:8}}>
+                  <div style={{fontSize:14,fontWeight:700,color:"#fff"}}>Danh sách khách hàng</div>
+                  <input style={{...inp,width:200}} placeholder="🔍 Tìm khách…" value={searchC} onChange={e=>setSearchC(e.target.value)}/>
+                </div>
+                <div style={{overflow:"auto"}}>
+                  <table style={{width:"100%",borderCollapse:"collapse"}}>
+                    <thead><tr>
+                      <th style={th}>Khách hàng</th>
+                      <th style={{...th}} className="desktop-only">SĐT</th>
+                      <th style={th}>Nhóm</th>
+                      <th style={th}>Điểm</th>
+                      <th style={th}>Chi tiêu</th>
+                      <th style={{...th}} className="desktop-only">Đơn</th>
+                    </tr></thead>
+                    <tbody>
+                      {customers.filter(c=>c.name.toLowerCase().includes(searchC.toLowerCase())||c.phone.includes(searchC)).map(c=>{
+                        const gc={"VIP":"#FFD700","Thân thiết":"#007AFF","Đại lý":"#AF52DE","Khách lẻ":"rgba(255,255,255,0.4)"};
+                        return(
+                          <tr key={c.id}>
+                            <td style={td}>
+                              <div style={{display:"flex",alignItems:"center",gap:8}}>
+                                <div style={{width:30,height:30,borderRadius:"50%",background:"linear-gradient(135deg,#FF6B2B44,#007AFF44)",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:12,color:"#fff",flexShrink:0}}>{c.name[0]}</div>
+                                <div>
+                                  <div style={{fontWeight:600,color:"#fff",fontSize:12}}>{c.name}</div>
+                                  <div style={{fontSize:10,color:"rgba(255,255,255,0.4)"}} className="desktop-only">{c.email}</div>
+                                </div>
+                              </div>
+                            </td>
+                            <td style={{...td,fontFamily:"monospace",fontSize:11}} className="desktop-only">{c.phone}</td>
+                            <td style={td}><span style={tag(gc[c.group]||"#888")}>{c.group}</span></td>
+                            <td style={{...td,fontWeight:700,color:"#FFD700"}}>⭐ {c.points.toLocaleString()}</td>
+                            <td style={{...td,fontWeight:700,color:"#FF6B2B"}}>{fmtS(c.totalSpent)}đ</td>
+                            <td style={{...td,textAlign:"center"}} className="desktop-only">{c.orders}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {tab==="staff"&&(
+            <div>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:10,marginBottom:14}}>
+                {[{l:"Tổng NV",v:STAFF.length,i:"👔"},{l:"Quỹ lương",v:fmtS(STAFF.reduce((s,e)=>s+e.salary,0))+"đ",i:"💵"},{l:"DS trung bình",v:fmtS(STAFF.filter(e=>e.sales>0).reduce((s,e)=>s+e.sales,0)/STAFF.filter(e=>e.sales>0).length)+"đ",i:"📊"},{l:"Hoa hồng ước tính",v:fmtS(STAFF.reduce((s,e)=>s+(e.sales*e.commission/100),0))+"đ",i:"🎯"}].map((s,i)=>(
+                  <div key={i} style={card}>
+                    <div style={{fontSize:22,marginBottom:5}}>{s.i}</div>
+                    <div style={{fontSize:18,fontWeight:800,color:"#FF6B2B"}}>{s.v}</div>
+                    <div style={{fontSize:10,color:"rgba(255,255,255,0.4)",marginTop:2}}>{s.l}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={card}>
+                <div style={{fontSize:14,fontWeight:700,color:"#fff",marginBottom:12}}>Bảng lương tháng 6/2025</div>
+                <div style={{overflow:"auto"}}>
+                  <table style={{width:"100%",borderCollapse:"collapse"}}>
+                    <thead><tr>
+                      <th style={th}>Nhân viên</th>
+                      <th style={th}>Chức vụ</th>
+                      <th style={{...th}} className="desktop-only">Ngày công</th>
+                      <th style={{...th}} className="desktop-only">Doanh số</th>
+                      <th style={th}>Lương CB</th>
+                      <th style={th}>Hoa hồng</th>
+                      <th style={th}>Tổng</th>
+                    </tr></thead>
+                    <tbody>
+                      {STAFF.map((e,i)=>{
+                        const comm=Math.round(e.sales*e.commission/100);
+                        return(
+                          <tr key={i}>
+                            <td style={td}>
+                              <div style={{display:"flex",alignItems:"center",gap:8}}>
+                                <div style={{width:30,height:30,borderRadius:"50%",background:"linear-gradient(135deg,#007AFF44,#AF52DE44)",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:12,color:"#fff",flexShrink:0}}>{e.name[0]}</div>
+                                <span style={{fontWeight:600,color:"#fff",fontSize:12}}>{e.name}</span>
+                              </div>
+                            </td>
+                            <td style={td}><span style={tag(e.role==="Quản lý"?"#FF6B2B":e.role==="Kế toán"?"#AF52DE":"#007AFF")}>{e.role}</span></td>
+                            <td style={{...td,textAlign:"center"}} className="desktop-only">{e.workDays}/22</td>
+                            <td style={{...td,color:"#FF6B2B",fontWeight:600}} className="desktop-only">{e.sales>0?fmtS(e.sales)+"đ":"—"}</td>
+                            <td style={td}>{fmtS(e.salary)}đ</td>
+                            <td style={{...td,color:"#34C759"}}>{comm>0?"+"+fmtS(comm)+"đ":"—"}</td>
+                            <td style={{...td,fontWeight:800,color:"#fff"}}>{fmtS(e.salary+comm)}đ</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {tab==="reports"&&(
+            <div>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:10,marginBottom:14}}>
+                {RD.slice(-3).map((d,i)=>(
+                  <div key={i} style={{background:"linear-gradient(135deg,#FF6B2B22,#FF6B2B08)",border:"1px solid #FF6B2B30",borderRadius:14,padding:16}}>
+                    <div style={{fontSize:10,color:"rgba(255,255,255,0.4)",textTransform:"uppercase",letterSpacing:0.7}}>Tháng {4+i}/2025</div>
+                    <div style={{fontSize:20,fontWeight:800,color:"#FF6B2B",marginTop:4}}>{fmtS(d.revenue)}đ</div>
+                    <div style={{fontSize:10,color:"rgba(255,255,255,0.4)",marginTop:3}}>LN: {fmtS(d.revenue-d.cost)}đ ({Math.round(((d.revenue-d.cost)/d.revenue)*100)}%)</div>
+                  </div>
+                )).concat([
+                  <div key="total" style={{background:"linear-gradient(135deg,#34C75922,#34C75908)",border:"1px solid #34C75930",borderRadius:14,padding:16}}>
+                    <div style={{fontSize:10,color:"rgba(255,255,255,0.4)",textTransform:"uppercase",letterSpacing:0.7}}>Tổng 6 tháng</div>
+                    <div style={{fontSize:20,fontWeight:800,color:"#34C759",marginTop:4}}>{fmtS(RD.reduce((s,d)=>s+d.revenue,0))}đ</div>
+                    <div style={{fontSize:10,color:"rgba(255,255,255,0.4)",marginTop:3}}>LN ròng: {fmtS(totalProfit)}đ</div>
+                  </div>
+                ])}
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"minmax(0,1fr) minmax(0,1fr)",gap:12,marginBottom:12}}>
+                <div style={card}>
+                  <div style={{fontSize:14,fontWeight:700,color:"#fff",marginBottom:12}}>Doanh thu & Lợi nhuận</div>
+                  <div style={{overflow:"auto"}}>
+                    <table style={{width:"100%",borderCollapse:"collapse"}}>
+                      <thead><tr>
+                        <th style={th}>Tháng</th><th style={th}>Doanh thu</th><th style={{...th}} className="desktop-only">Chi phí</th><th style={th}>Lợi nhuận</th><th style={th}>Biên</th>
+                      </tr></thead>
+                      <tbody>
+                        {RD.map((d,i)=>{
+                          const pr=d.revenue-d.cost;
+                          const mg=Math.round((pr/d.revenue)*100);
+                          return(
+                            <tr key={i}>
+                              <td style={{...td,fontWeight:700}}>T{i+1}</td>
+                              <td style={{...td,color:"#FF6B2B",fontWeight:700}}>{fmtS(d.revenue)}đ</td>
+                              <td style={{...td,color:"rgba(255,255,255,0.5)"}} className="desktop-only">{fmtS(d.cost)}đ</td>
+                              <td style={{...td,color:"#34C759",fontWeight:700}}>{fmtS(pr)}đ</td>
+                              <td style={td}><span style={tag(mg>=25?"#34C759":"#FF9500")}>{mg}%</span></td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <div style={card}>
+                  <div style={{fontSize:14,fontWeight:700,color:"#fff",marginBottom:12}}>Top 8 sản phẩm</div>
+                  {[...products].sort((a,b)=>b.sold-a.sold).slice(0,8).map((p,i)=>(
+                    <div key={p.id} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 0",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
+                      <div style={{width:20,height:20,borderRadius:5,background:i<3?"rgba(255,107,43,0.2)":"rgba(255,255,255,0.06)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,color:i<3?"#FF6B2B":"rgba(255,255,255,0.3)",flexShrink:0}}>#{i+1}</div>
+                      <span style={{fontSize:14}}>{p.image}</span>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontSize:11,fontWeight:600,color:"#fff",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.name}</div>
+                        <div style={{fontSize:9,color:"rgba(255,255,255,0.35)"}}>{p.sold} đã bán</div>
+                      </div>
+                      <div style={{fontSize:11,fontWeight:700,color:"#FF6B2B",flexShrink:0}}>{fmtS(p.sold*p.price)}đ</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="mobile-only" style={{background:C2,borderTop:"1px solid rgba(255,255,255,0.07)",display:"flex",justifyContent:"space-around",padding:"8px 4px",flexShrink:0}}>
+          {navItems.map(item=>(
+            <button key={item.id} onClick={()=>setTab(item.id)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,background:"none",border:"none",cursor:"pointer",padding:"4px 8px",borderRadius:8,color:tab===item.id?"#FF6B2B":"rgba(255,255,255,0.4)",minWidth:0,flex:1}}>
+              <span style={{fontSize:20}}>{item.icon}</span>
+              <span style={{fontSize:9,fontWeight:tab===item.id?700:400,whiteSpace:"nowrap"}}>{item.label}</span>
+            </button>
+          ))}
+        </div>
+      </main>
+
+      {showChat&&<Chatbot products={products} customers={customers} orders={orders} onClose={()=>setShowChat(false)}/>}
+      {!showChat&&(
+        <button onClick={()=>setShowChat(true)} style={{position:"fixed",bottom:20,right:20,width:56,height:56,borderRadius:"50%",background:"linear-gradient(135deg,#FF6B2B,#FF4500)",border:"none",cursor:"pointer",boxShadow:"0 6px 24px rgba(255,107,43,0.5)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,zIndex:500,transition:"all 0.2s"}}>
+          🤖
+        </button>
+      )}
+
+      {notif&&(
+        <div style={{position:"fixed",top:14,left:"50%",transform:"translateX(-50%)",zIndex:9998,background:notif.type==="error"?"#FF3B30":"#34C759",color:"#fff",padding:"11px 20px",borderRadius:12,fontSize:13,fontWeight:600,boxShadow:"0 8px 24px rgba(0,0,0,0.3)",animation:"fadeUp 0.2s ease",whiteSpace:"nowrap",maxWidth:"90vw"}}>
+          {notif.type==="error"?"⚠️":"✅"} {notif.msg}
+        </div>
+      )}
+    </div>
+  );
+}
 </body>
 </html>
   { id:6,sku:"IPH15-128-BLU",name:"iPhone 15 128GB",category:"iPhone",brand:"Apple",color:"Xanh Lam",price:22490000,costPrice:17800000,stock:20,minStock:5,sold:62,image:"📱" },
