@@ -1,24 +1,516 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PhoneShop Pro - Single HTML</title>
+  
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-// ─── STORAGE (chuẩn hóa thành localStorage cho Web) ──────────────────────────
-const SKEY = "phoneshop_shared_v2";
-async function saveShared(data) {
-  try { localStorage.setItem(SKEY, JSON.stringify(data)); } catch {}
-}
-async function loadShared() {
-  try {
-    const r = localStorage.getItem(SKEY);
-    return r ? JSON.parse(r) : null;
-  } catch { return null; }
-}
-async function deleteShared() {
-  try { localStorage.removeItem(SKEY); } catch {}
-}
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: #0B1629;
+      color: #E8EDF5;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
 
-// ─── INITIAL DATA ────────────────────────────────────────────────────────────
-const IP = [
-  { id:1,sku:"IPH15PM-256-BLK",name:"iPhone 15 Pro Max 256GB",category:"iPhone",brand:"Apple",color:"Đen Titan",price:34990000,costPrice:28000000,stock:12,minStock:3,sold:47,image:"📱" },
-  { id:2,sku:"SAM-S24U-512-WHT",name:"Samsung S24 Ultra 512GB",category:"Samsung",brand:"Samsung",color:"Trắng Bạch Kim",price:31990000,costPrice:25000000,stock:8,minStock:3,sold:35,image:"📱" },
+  <script type="text/babel">
+    // Lấy các hooks từ biến global React thay vì import
+    const { useState, useEffect, useRef, useCallback } = React;
+
+    // ⚠️ QUAN TRỌNG: Nhập API Key của Claude vào đây. 
+    // Lưu ý: Đặt Key trong file HTML tĩnh có rủi ro lộ Key nếu bạn đưa lên mạng public.
+    const ANTHROPIC_API_KEY = ""; 
+
+    // ─── STORAGE ───────────────────────────────────────────────────────────
+    const SKEY = "phoneshop_shared_v2";
+    async function saveShared(data) {
+      try { localStorage.setItem(SKEY, JSON.stringify(data)); } catch {}
+    }
+    async function loadShared() {
+      try {
+        const r = localStorage.getItem(SKEY);
+        return r ? JSON.parse(r) : null;
+      } catch { return null; }
+    }
+    async function deleteShared() {
+      try { localStorage.removeItem(SKEY); } catch {}
+    }
+
+    // ─── INITIAL DATA ────────────────────────────────────────────────────────
+    const IP = [
+      { id:1,sku:"IPH15PM-256-BLK",name:"iPhone 15 Pro Max 256GB",category:"iPhone",brand:"Apple",color:"Đen Titan",price:34990000,costPrice:28000000,stock:12,minStock:3,sold:47,image:"📱" },
+      { id:2,sku:"SAM-S24U-512-WHT",name:"Samsung S24 Ultra 512GB",category:"Samsung",brand:"Samsung",color:"Trắng Bạch Kim",price:31990000,costPrice:25000000,stock:8,minStock:3,sold:35,image:"📱" },
+      { id:3,sku:"OPP-FIND7-256-BLK",name:"OPPO Find X7 256GB",category:"OPPO",brand:"OPPO",color:"Đen Bóng",price:22990000,costPrice:17500000,stock:2,minStock:3,sold:28,image:"📱" },
+      { id:4,sku:"XIA-14U-256-PUR",name:"Xiaomi 14 Ultra 256GB",category:"Xiaomi",brand:"Xiaomi",color:"Tím Titan",price:23490000,costPrice:18000000,stock:15,minStock:3,sold:22,image:"📱" },
+      { id:5,sku:"VIV-X100P-256-BLU",name:"Vivo X100 Pro 256GB",category:"Vivo",brand:"Vivo",color:"Xanh Biển",price:19990000,costPrice:15500000,stock:6,minStock:3,sold:19,image:"📱" },
+      { id:6,sku:"IPH15-128-BLU",name:"iPhone 15 128GB",category:"iPhone",brand:"Apple",color:"Xanh Lam",price:22490000,costPrice:17800000,stock:20,minStock:5,sold:62,image:"📱" },
+      { id:7,sku:"SAM-A55-256-LVD",name:"Samsung A55 256GB",category:"Samsung",brand:"Samsung",color:"Xanh Tím Oải Hương",price:9990000,costPrice:7200000,stock:25,minStock:5,sold:88,image:"📱" },
+      { id:8,sku:"ACC-CASE-MG-BLK",name:"Ốp lưng MagSafe iPhone 15",category:"Phụ kiện",brand:"Apple",color:"Đen",price:890000,costPrice:300000,stock:45,minStock:10,sold:120,image:"🛡️" },
+      { id:9,sku:"ACC-CHG-65W-WHT",name:"Sạc nhanh 65W GaN",category:"Phụ kiện",brand:"Anker",color:"Trắng",price:690000,costPrice:220000,stock:38,minStock:10,sold:95,image:"🔌" },
+      { id:10,sku:"ACC-EAR-AIRP3-WHT",name:"AirPods 3 (Lightning)",category:"Tai nghe",brand:"Apple",color:"Trắng",price:4490000,costPrice:3200000,stock:18,minStock:5,sold:41,image:"🎧" },
+    ];
+    const IC = [
+      { id:1,name:"Nguyễn Văn An",phone:"0912345678",email:"an.nguyen@gmail.com",group:"VIP",points:2450,totalSpent:68900000,orders:5,lastVisit:"2025-06-20" },
+      { id:2,name:"Trần Thị Bình",phone:"0987654321",email:"binh.tran@gmail.com",group:"Thân thiết",points:890,totalSpent:23400000,orders:3,lastVisit:"2025-06-18" },
+      { id:3,name:"Lê Minh Cường",phone:"0909123456",email:"cuong.le@gmail.com",group:"Đại lý",points:5200,totalSpent:145000000,orders:18,lastVisit:"2025-06-22" },
+      { id:4,name:"Phạm Thị Dung",phone:"0978234567",email:"dung.pham@gmail.com",group:"Khách lẻ",points:120,totalSpent:3200000,orders:1,lastVisit:"2025-06-15" },
+      { id:5,name:"Hoàng Văn Em",phone:"0965432109",email:"em.hoang@gmail.com",group:"Thân thiết",points:1340,totalSpent:34500000,orders:4,lastVisit:"2025-06-21" },
+    ];
+    const IO = [
+      { id:"HD001",customer:"Nguyễn Văn An",items:[{name:"iPhone 15 Pro Max 256GB",qty:1,price:34990000}],total:34990000,payment:"Thẻ",status:"Hoàn thành",date:"2025-06-22 09:15" },
+      { id:"HD002",customer:"Trần Thị Bình",items:[{name:"Samsung A55 256GB",qty:1,price:9990000},{name:"Ốp lưng MagSafe",qty:1,price:890000}],total:10880000,payment:"QR",status:"Hoàn thành",date:"2025-06-22 10:32" },
+      { id:"HD003",customer:"Khách lẻ",items:[{name:"Sạc nhanh 65W GaN",qty:2,price:1380000}],total:1380000,payment:"Tiền mặt",status:"Hoàn thành",date:"2025-06-22 11:05" },
+      { id:"HD004",customer:"Lê Minh Cường",items:[{name:"Samsung S24 Ultra 512GB",qty:2,price:63980000}],total:63980000,payment:"Chuyển khoản",status:"Hoàn thành",date:"2025-06-22 13:20" },
+      { id:"HD005",customer:"Hoàng Văn Em",items:[{name:"AirPods 3",qty:1,price:4490000}],total:4490000,payment:"QR",status:"Đang xử lý",date:"2025-06-22 14:48" },
+    ];
+    const STAFF=[
+      {id:1,name:"Nguyễn Thị Mai",role:"Quản lý",sales:145000000,commission:2.5,workDays:22,salary:12000000},
+      {id:2,name:"Trần Văn Hùng",role:"Nhân viên bán hàng",sales:89000000,commission:1.5,workDays:22,salary:8000000},
+      {id:3,name:"Phạm Thị Lan",role:"Nhân viên bán hàng",sales:67000000,commission:1.5,workDays:20,salary:8000000},
+      {id:4,name:"Lê Văn Đức",role:"Kế toán",sales:0,commission:0,workDays:22,salary:10000000},
+    ];
+    const RD=[
+      {month:"T1",revenue:245000000,cost:185000000},{month:"T2",revenue:198000000,cost:148000000},
+      {month:"T3",revenue:312000000,cost:235000000},{month:"T4",revenue:287000000,cost:215000000},
+      {month:"T5",revenue:356000000,cost:268000000},{month:"T6",revenue:298000000,cost:223000000},
+    ];
+
+    // ─── HELPERS ───────────────────────────────────────────────────────────
+    const fmt=(n)=>new Intl.NumberFormat("vi-VN").format(n)+"đ";
+    const fmtS=(n)=>{if(n>=1e9)return(n/1e9).toFixed(1)+"tỷ";if(n>=1e6)return(n/1e6).toFixed(0)+"tr";return new Intl.NumberFormat("vi-VN").format(n);};
+
+    // ─── MINI BAR CHART ──────────────────────────────────────────────────────
+    function MiniBar({data}){
+      const max=Math.max(...data.map(d=>d.revenue));
+      return(
+        <div style={{display:"flex",alignItems:"flex-end",gap:6,height:80,padding:"0 4px"}}>
+          {data.map((d,i)=>{
+            const h=Math.max(8,(d.revenue/max)*70);
+            const ph=Math.max(4,(d.cost/max)*70);
+            return(
+              <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
+                <div style={{display:"flex",alignItems:"flex-end",gap:1,height:72}}>
+                  <div style={{width:8,height:h,background:"linear-gradient(180deg,#FF6B2B,#FF9A6B)",borderRadius:"3px 3px 0 0"}}/>
+                  <div style={{width:8,height:ph,background:"rgba(255,255,255,0.2)",borderRadius:"3px 3px 0 0"}}/>
+                </div>
+                <span style={{fontSize:9,color:"rgba(255,255,255,0.5)"}}>{d.month}</span>
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+
+    // ─── CHATBOT ─────────────────────────────────────────────────────────────
+    function Chatbot({products,customers,orders,onClose}){
+      const [msgs,setMsgs]=useState([{role:"bot",text:"Xin chào! Tôi là trợ lý AI của PhoneShop Pro 📱\nBạn cần hỗ trợ gì?"}]);
+      const [input,setInput]=useState("");
+      const [loading,setLoading]=useState(false);
+      const endRef=useRef(null);
+      useEffect(()=>{endRef.current?.scrollIntoView({behavior:"smooth"});},[msgs]);
+
+      const send=async()=>{
+        const q=input.trim();
+        if(!q||loading)return;
+        setInput("");
+        setMsgs(p=>[...p,{role:"user",text:q}]);
+        setLoading(true);
+
+        const lowStock=products.filter(p=>p.stock<=p.minStock);
+        const topProducts=[...products].sort((a,b)=>b.sold-a.sold).slice(0,5);
+        const totalRevenue=orders.filter(o=>o.status==="Hoàn thành").reduce((s,o)=>s+o.total,0);
+        const context=`Bạn là trợ lý AI cho cửa hàng điện thoại PhoneShop Pro. Trả lời ngắn gọn bằng tiếng Việt.
+DỮ LIỆU THỰC TẾ:
+- Tổng SP: ${products.length}, tồn: ${products.reduce((s,p)=>s+p.stock,0)} máy
+- Hàng sắp hết: ${lowStock.map(p=>p.name+" (còn "+p.stock+")").join(", ")||"Không có"}
+- Tổng KH: ${customers.length}, Doanh thu: ${fmt(totalRevenue)}`;
+
+        try{
+          if (!ANTHROPIC_API_KEY) {
+            setMsgs(p=>[...p,{role:"bot",text:"⚠️ Vui lòng cấu hình biến ANTHROPIC_API_KEY ở đầu code HTML để sử dụng AI."}]);
+            setLoading(false);
+            return;
+          }
+
+          const res=await fetch("https://api.anthropic.com/v1/messages",{
+            method:"POST",
+            headers:{
+              "Content-Type":"application/json",
+              "x-api-key": ANTHROPIC_API_KEY,
+              "anthropic-version": "2023-06-01",
+              "anthropic-dangerously-allow-browser": "true" 
+            },
+            body:JSON.stringify({
+              model:"claude-3-haiku-20240307",
+              max_tokens:1000,
+              system:context,
+              messages:[...msgs.filter(m=>m.role!=="bot"||msgs.indexOf(m)>0).map(m=>({role:m.role==="bot"?"assistant":"user",content:m.text})),{role:"user",content:q}]
+            })
+          });
+          const data=await res.json();
+          if (data.error) throw new Error(data.error.message);
+          const reply=data.content?.map(c=>c.text||"").join("")||"Xin lỗi, tôi không hiểu câu hỏi này.";
+          setMsgs(p=>[...p,{role:"bot",text:reply}]);
+        }catch(err){
+          setMsgs(p=>[...p,{role:"bot",text:`⚠️ Lỗi: ${err.message || "Không kết nối được."}`}]);
+        }
+        setLoading(false);
+      };
+
+      const quickQ=["Hàng nào sắp hết?","Doanh thu hôm nay?","Tư vấn nhập hàng?"];
+
+      return(
+        <div style={{position:"fixed",bottom:20,right:20,width:360,height:520,background:"#0F2547",border:"1px solid rgba(255,107,43,0.3)",borderRadius:20,display:"flex",flexDirection:"column",zIndex:1000,boxShadow:"0 20px 60px rgba(0,0,0,0.5)",overflow:"hidden"}}>
+          <div style={{background:"linear-gradient(135deg,#FF6B2B,#FF4500)",padding:"14px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0}}>
+            <div style={{display:"flex",alignItems:"center",gap:10}}>
+              <div style={{width:36,height:36,background:"rgba(255,255,255,0.2)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>🤖</div>
+              <div>
+                <div style={{fontWeight:700,color:"#fff",fontSize:14}}>AI Trợ lý</div>
+                <div style={{fontSize:10,color:"rgba(255,255,255,0.75)"}}>Online</div>
+              </div>
+            </div>
+            <button onClick={onClose} style={{background:"rgba(255,255,255,0.2)",border:"none",borderRadius:8,padding:"6px 10px",color:"#fff",cursor:"pointer",fontSize:16}}>✕</button>
+          </div>
+          <div style={{flex:1,overflow:"auto",padding:14,display:"flex",flexDirection:"column",gap:10}}>
+            {msgs.map((m,i)=>(
+              <div key={i} style={{display:"flex",justifyContent:m.role==="user"?"flex-end":"flex-start"}}>
+                {m.role==="bot"&&<div style={{width:28,height:28,borderRadius:8,background:"rgba(255,107,43,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0,marginRight:8}}>🤖</div>}
+                <div style={{maxWidth:"80%",padding:"10px 13px",borderRadius:m.role==="user"?"14px 14px 4px 14px":"14px 14px 14px 4px",background:m.role==="user"?"linear-gradient(135deg,#FF6B2B,#FF4500)":"rgba(255,255,255,0.08)",color:"#fff",fontSize:13,lineHeight:1.5,whiteSpace:"pre-wrap"}}>{m.text}</div>
+              </div>
+            ))}
+            {loading&&( <div style={{color:"rgba(255,255,255,0.5)", fontSize:12}}>Đang phản hồi...</div> )}
+            <div ref={endRef}/>
+          </div>
+          <div style={{padding:"0 12px 8px",display:"flex",gap:6,flexWrap:"wrap",flexShrink:0}}>
+            {quickQ.map((q,i)=>(<button key={i} onClick={()=>{setInput(q);}} style={{padding:"4px 9px",borderRadius:20,border:"1px solid rgba(255,107,43,0.3)",background:"rgba(255,107,43,0.08)",color:"rgba(255,255,255,0.7)",cursor:"pointer",fontSize:11}}>{q}</button>))}
+          </div>
+          <div style={{padding:"8px 12px 14px",display:"flex",gap:8,flexShrink:0,borderTop:"1px solid rgba(255,255,255,0.06)"}}>
+            <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&send()} placeholder="Nhập câu hỏi..." style={{flex:1,background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:10,padding:"9px 13px",color:"#fff",fontSize:13,outline:"none"}}/>
+            <button onClick={send} disabled={loading||!input.trim()} style={{width:40,height:40,borderRadius:10,background:loading||!input.trim()?"rgba(255,255,255,0.08)":"linear-gradient(135deg,#FF6B2B,#FF4500)",border:"none",color:"#fff",cursor:loading||!input.trim()?"not-allowed":"pointer"}}>➤</button>
+          </div>
+        </div>
+      );
+    }
+
+    // ─── MAIN APP ────────────────────────────────────────────────────────────
+    function App(){
+      const [tab,setTab]=useState("dashboard");
+      const [products,setProducts]=useState(IP);
+      const [customers,setCustomers]=useState(IC);
+      const [orders,setOrders]=useState(IO);
+      const [cart,setCart]=useState([]);
+      const [searchP,setSearchP]=useState("");
+      const [searchC,setSearchC]=useState("");
+      const [selCust,setSelCust]=useState(null);
+      const [payment,setPayment]=useState("Tiền mặt");
+      const [discount,setDiscount]=useState(0);
+      const [showReceipt,setShowReceipt]=useState(false);
+      const [lastOrder,setLastOrder]=useState(null);
+      const [catFilter,setCatFilter]=useState("Tất cả");
+      const [showAddP,setShowAddP]=useState(false);
+      const [newP,setNewP]=useState({sku:"",name:"",category:"iPhone",brand:"",color:"",price:"",costPrice:"",stock:"",minStock:3,image:"📱"});
+      const [notif,setNotif]=useState(null);
+      const [sidebar,setSidebar]=useState(true);
+      const [showChat,setShowChat]=useState(false);
+      const [cacheLoaded,setCacheLoaded]=useState(false);
+      const [syncStatus,setSyncStatus]=useState(null); 
+      const [mobileNav,setMobileNav]=useState(false);
+      const saveTimer=useRef(null);
+      const isMobile=typeof window!=="undefined"&&window.innerWidth<768;
+
+      const showNotif=(msg,type="success")=>{setNotif({msg,type});setTimeout(()=>setNotif(null),3000);};
+
+      useEffect(()=>{
+        (async()=>{
+          const cached=await loadShared();
+          if(cached){
+            if(cached.products)setProducts(cached.products);
+            if(cached.customers)setCustomers(cached.customers);
+            if(cached.orders)setOrders(cached.orders);
+            if(cached.cart?.length>0)setCart(cached.cart);
+            if(cached.selCust)setSelCust(cached.selCust);
+            if(cached.payment)setPayment(cached.payment);
+            if(cached.discount!=null)setDiscount(cached.discount);
+            if(cached.newP)setNewP(cached.newP);
+            if(cached.tab)setTab(cached.tab);
+            setSyncStatus("loaded");
+            setTimeout(()=>setSyncStatus(null),2500);
+          }
+          setCacheLoaded(true);
+        })();
+      },[]);
+
+      const save=useCallback((data)=>{
+        if(!cacheLoaded)return;
+        if(saveTimer.current)clearTimeout(saveTimer.current);
+        setSyncStatus("saving");
+        saveTimer.current=setTimeout(async()=>{
+          try{
+            await saveShared(data);
+            setSyncStatus("saved");
+            setTimeout(()=>setSyncStatus(null),2000);
+          }catch{
+            setSyncStatus("error");
+            setTimeout(()=>setSyncStatus(null),3000);
+          }
+        },1000);
+      },[cacheLoaded]);
+
+      useEffect(()=>{
+        if(!cacheLoaded)return;
+        save({products,customers,orders,cart,selCust,payment,discount,newP,tab});
+      },[products,customers,orders,cart,selCust,payment,discount,newP,tab,cacheLoaded]);
+
+      const resetCache=async()=>{
+        await deleteShared();
+        setProducts(IP);setCustomers(IC);setOrders(IO);setCart([]);
+        setSelCust(null);setPayment("Tiền mặt");setDiscount(0);
+        setNewP({sku:"",name:"",category:"iPhone",brand:"",color:"",price:"",costPrice:"",stock:"",minStock:3,image:"📱"});
+        showNotif("Đã xóa dữ liệu đồng bộ");
+      };
+
+      const addToCart=p=>{
+        if(p.stock===0){showNotif("Hết hàng!","error");return;}
+        setCart(prev=>{
+          const ex=prev.find(i=>i.id===p.id);
+          if(ex){if(ex.qty>=p.stock){showNotif("Không đủ tồn kho!","error");return prev;}return prev.map(i=>i.id===p.id?{...i,qty:i.qty+1}:i);}
+          return[...prev,{...p,qty:1}];
+        });
+      };
+      const removeFromCart=id=>setCart(p=>p.filter(i=>i.id!==id));
+      const updateQty=(id,qty)=>{
+        if(qty<=0){removeFromCart(id);return;}
+        const pr=products.find(p=>p.id===id);
+        if(qty>pr.stock){showNotif("Không đủ tồn kho!","error");return;}
+        setCart(p=>p.map(i=>i.id===id?{...i,qty}:i));
+      };
+      
+      const cartTotal=cart.reduce((s,i)=>s+i.price*i.qty,0);
+      const discAmt=Math.round(cartTotal*(discount/100));
+      const finalTotal=cartTotal-discAmt;
+
+      const checkout=()=>{
+        if(cart.length===0){showNotif("Giỏ hàng trống!","error");return;}
+        const id="HD"+String(orders.length+1).padStart(3,"0");
+        const o={id,customer:selCust?selCust.name:"Khách lẻ",items:cart.map(i=>({name:i.name,qty:i.qty,price:i.price*i.qty})),total:finalTotal,payment,status:"Hoàn thành",date:new Date().toLocaleString("vi-VN")};
+        setOrders(p=>[o,...p]);
+        setProducts(p=>p.map(pr=>{const ci=cart.find(c=>c.id===pr.id);return ci?{...pr,stock:pr.stock-ci.qty,sold:pr.sold+ci.qty}:pr;}));
+        if(selCust){const pts=Math.floor(finalTotal/100000);setCustomers(p=>p.map(c=>c.id===selCust.id?{...c,points:c.points+pts,totalSpent:c.totalSpent+finalTotal,orders:c.orders+1}:c));}
+        setLastOrder(o);setCart([]);setSelCust(null);setDiscount(0);setShowReceipt(true);
+        showNotif(`Thanh toán thành công ${fmt(finalTotal)}!`);
+      };
+
+      const addProduct=()=>{
+        if(!newP.sku||!newP.name||!newP.price){showNotif("Vui lòng điền đầy đủ!","error");return;}
+        const p={...newP,id:products.length+1,price:+newP.price,costPrice:+newP.costPrice,stock:+newP.stock,minStock:+newP.minStock,sold:0};
+        setProducts(prev=>[p,...prev]);
+        setShowAddP(false);
+        setNewP({sku:"",name:"",category:"iPhone",brand:"",color:"",price:"",costPrice:"",stock:"",minStock:3,image:"📱"});
+        showNotif("Thêm SP thành công!");
+      };
+
+      const cats=["Tất cả",...new Set(products.map(p=>p.category))];
+      const filteredP=products.filter(p=>{
+        const mc=catFilter==="Tất cả"||p.category===catFilter;
+        const ms=p.name.toLowerCase().includes(searchP.toLowerCase())||p.sku.toLowerCase().includes(searchP.toLowerCase());
+        return mc&&ms;
+      });
+      const lowStock=products.filter(p=>p.stock<=p.minStock);
+      const todayRev=orders.filter(o=>o.status==="Hoàn thành").reduce((s,o)=>s+o.total,0);
+      const totalProfit=RD.reduce((s,d)=>s+(d.revenue-d.cost),0);
+
+      const navItems=[
+        {id:"dashboard",icon:"📊",label:"Tổng quan"},
+        {id:"pos",icon:"🛒",label:"Bán hàng"},
+        {id:"products",icon:"📦",label:"Hàng hóa"},
+        {id:"orders",icon:"🧾",label:"Hóa đơn"},
+        {id:"customers",icon:"👥",label:"Khách hàng"},
+        {id:"staff",icon:"👔",label:"Nhân sự"},
+        {id:"reports",icon:"📈",label:"Báo cáo"},
+      ];
+
+      const syncCfg={
+        saving:{bg:"rgba(255,149,0,0.12)",border:"rgba(255,149,0,0.3)",color:"#FF9500",label:"☁️ Đang lưu…",spin:true},
+        saved:{bg:"rgba(52,199,89,0.12)",border:"rgba(52,199,89,0.3)",color:"#34C759",label:"☁️ Đã lưu"},
+        loaded:{bg:"rgba(0,122,255,0.12)",border:"rgba(0,122,255,0.3)",color:"#007AFF",label:"📲 Đã khôi phục"},
+        error:{bg:"rgba(255,59,48,0.12)",border:"rgba(255,59,48,0.3)",color:"#FF3B30",label:"⚠️ Lỗi lưu"},
+      }[syncStatus]||null;
+
+      const C="#0B1629",C2="#0F2547",C3="#132040";
+      const inp={background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:10,padding:"9px 13px",color:"#fff",fontSize:13,outline:"none",width:"100%",boxSizing:"border-box"};
+      const card={background:C3,border:"1px solid rgba(255,255,255,0.07)",borderRadius:14,padding:20};
+      const tag=(cl)=>({padding:"2px 8px",borderRadius:6,fontSize:11,fontWeight:600,background:cl+"22",color:cl});
+      const btnP={background:"linear-gradient(135deg,#FF6B2B,#FF4500)",color:"#fff",border:"none",borderRadius:10,padding:"10px 18px",cursor:"pointer",fontSize:13,fontWeight:700};
+      const btnS={background:"rgba(255,255,255,0.06)",color:"rgba(255,255,255,0.7)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:9,padding:"9px 16px",cursor:"pointer",fontSize:13};
+      const th={textAlign:"left",padding:"10px 14px",fontSize:11,color:"rgba(255,255,255,0.4)",fontWeight:600,textTransform:"uppercase",borderBottom:"1px solid rgba(255,255,255,0.07)"};
+      const td={padding:"12px 14px",fontSize:13,color:"rgba(255,255,255,0.8)",borderBottom:"1px solid rgba(255,255,255,0.04)"};
+
+      const NAV_W=sidebar?220:64;
+
+      if(showReceipt&&lastOrder){
+        return(
+          <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:9999,padding:16}}>
+            <style>{`@keyframes popIn{from{opacity:0;transform:scale(0.85)}to{opacity:1;transform:scale(1)}}`}</style>
+            <div style={{background:"#132040",borderRadius:20,padding:28,width:"100%",maxWidth:380,border:"1px solid rgba(255,255,255,0.1)",animation:"popIn 0.3s ease"}}>
+              <div style={{textAlign:"center",marginBottom:20}}>
+                <div style={{fontSize:52}}>✅</div>
+                <div style={{fontSize:20,fontWeight:800,color:"#fff",marginTop:6}}>Thanh toán thành công!</div>
+                <div style={{fontSize:13,color:"rgba(255,255,255,0.4)",marginTop:3}}>Hóa đơn #{lastOrder.id}</div>
+              </div>
+              <button onClick={()=>setShowReceipt(false)} style={{width:"100%",padding:13,background:"linear-gradient(135deg,#FF6B2B,#FF4500)",border:"none",borderRadius:12,color:"#fff",fontWeight:700,fontSize:15,cursor:"pointer"}}>Đóng hóa đơn</button>
+            </div>
+          </div>
+        );
+      }
+
+      return(
+        <div style={{display:"flex",height:"100vh",background:C,fontFamily:"'Inter',-apple-system,sans-serif",color:"#E8EDF5",overflow:"hidden",position:"relative"}}>
+          <style>{`
+            *{box-sizing:border-box;}
+            ::-webkit-scrollbar{width:4px;height:4px;}
+            ::-webkit-scrollbar-track{background:transparent;}
+            ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px;}
+            @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+            @media(max-width:767px){ .desktop-only{display:none!important;} }
+            @media(min-width:768px){ .mobile-only{display:none!important;} }
+            button:hover{opacity:0.88;}
+          `}</style>
+
+          <aside className="desktop-only" style={{width:NAV_W,background:C2,display:"flex",flexDirection:"column",transition:"width 0.25s ease",flexShrink:0,borderRight:"1px solid rgba(255,255,255,0.06)"}}>
+            <div style={{padding:sidebar?"20px 20px 14px":"20px 12px 14px",borderBottom:"1px solid rgba(255,255,255,0.06)",display:"flex",alignItems:"center",gap:10}}>
+              <div style={{width:36,height:36,background:"linear-gradient(135deg,#FF6B2B,#FF9A6B)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>📱</div>
+              {sidebar&&<div><div style={{fontWeight:800,fontSize:15,color:"#fff"}}>PhoneShop</div></div>}
+            </div>
+            <nav style={{flex:1,padding:"12px 8px",display:"flex",flexDirection:"column",gap:2}}>
+              {navItems.map(item=>(
+                <button key={item.id} onClick={()=>setTab(item.id)} style={{display:"flex",alignItems:"center",gap:10,padding:sidebar?"10px 12px":"10px",borderRadius:10,border:"none",cursor:"pointer",background:tab===item.id?"rgba(255,107,43,0.15)":"transparent",color:tab===item.id?"#FF6B2B":"rgba(255,255,255,0.55)",fontSize:13.5,fontWeight:tab===item.id?600:400,width:"100%",textAlign:"left",borderLeft:tab===item.id?"3px solid #FF6B2B":"3px solid transparent"}}>
+                  <span style={{fontSize:17,flexShrink:0}}>{item.icon}</span>
+                  {sidebar&&<span>{item.label}</span>}
+                </button>
+              ))}
+            </nav>
+          </aside>
+
+          <main style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",minWidth:0}}>
+            <header style={{padding:"12px 16px",background:C2,borderBottom:"1px solid rgba(255,255,255,0.06)",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0}}>
+              <div style={{fontSize:16,fontWeight:700,color:"#fff"}}>{navItems.find(n=>n.id===tab)?.label}</div>
+              <div style={{display:"flex",alignItems:"center",gap:8}}>
+                {syncCfg&&<div style={{background:syncCfg.bg,border:`1px solid ${syncCfg.border}`,borderRadius:8,padding:"5px 10px",fontSize:11,color:syncCfg.color}}>{syncCfg.label}</div>}
+                <button onClick={resetCache} style={{background:"rgba(255,59,48,0.1)",border:"1px solid rgba(255,59,48,0.2)",borderRadius:8,padding:"7px 10px",cursor:"pointer",color:"rgba(255,100,100,0.7)"}}>🗑️ Reset</button>
+              </div>
+            </header>
+
+            <div style={{flex:1,overflow:"auto",padding:"16px"}}>
+              {tab==="dashboard"&&(
+                <div>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:12,marginBottom:16}}>
+                    {[{label:"Doanh thu",value:fmtS(todayRev)+"đ",icon:"💰"},{label:"Đơn hàng",value:orders.length,icon:"🧾"},{label:"Tổng tồn kho",value:products.reduce((s,p)=>s+p.stock,0),icon:"📦"}].map((s,i)=>(
+                      <div key={i} style={{background:`rgba(255,255,255,0.04)`,borderRadius:14,padding:16}}>
+                        <div style={{fontSize:10,color:"rgba(255,255,255,0.4)"}}>{s.label}</div>
+                        <div style={{fontSize:22,fontWeight:800,color:"#FF6B2B",marginTop:4}}>{s.value}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={card}>
+                    <div style={{fontSize:14,fontWeight:700,color:"#fff",marginBottom:12}}>Biểu đồ mini</div>
+                    <MiniBar data={RD}/>
+                  </div>
+                </div>
+              )}
+
+              {tab==="pos"&&(
+                <div style={{display:"grid",gridTemplateColumns:"minmax(0,1fr) 340px",gap:14,height:"100%"}}>
+                  <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                    <input style={inp} placeholder="🔍 Tìm SP..." value={searchP} onChange={e=>setSearchP(e.target.value)}/>
+                    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(150px,1fr))",gap:8,overflow:"auto"}}>
+                      {filteredP.map(p=>(
+                        <button key={p.id} onClick={()=>addToCart(p)} style={{background:C3,border:"1px solid rgba(255,255,255,0.08)",borderRadius:12,padding:12,cursor:"pointer",textAlign:"left"}}>
+                          <div style={{fontSize:26,marginBottom:5}}>{p.image}</div>
+                          <div style={{fontSize:11,fontWeight:600,color:"#fff"}}>{p.name}</div>
+                          <div style={{fontSize:13,fontWeight:800,color:"#FF6B2B"}}>{fmtS(p.price)}đ</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div style={{...card,display:"flex",flexDirection:"column"}}>
+                    <div style={{fontSize:14,fontWeight:700,color:"#fff",marginBottom:10}}>🛒 Giỏ hàng</div>
+                    <div style={{flex:1,overflow:"auto"}}>
+                      {cart.map(item=>(
+                        <div key={item.id} style={{padding:"9px 0",borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
+                          <div style={{fontSize:11,fontWeight:600,color:"#fff"}}>{item.name}</div>
+                          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:6}}>
+                            <div style={{display:"flex",gap:4}}>
+                              <button onClick={()=>updateQty(item.id,item.qty-1)} style={btnS}>-</button>
+                              <span style={{width:26,textAlign:"center",color:"#fff"}}>{item.qty}</span>
+                              <button onClick={()=>updateQty(item.id,item.qty+1)} style={btnS}>+</button>
+                            </div>
+                            <span style={{color:"#FF6B2B",fontWeight:700}}>{fmt(item.price*item.qty)}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <button onClick={checkout} style={{...btnP,width:"100%",padding:12,marginTop:10}}>💳 Thanh toán {fmt(finalTotal)}</button>
+                  </div>
+                </div>
+              )}
+
+              {/* Các tab khác được giữ nguyên cấu trúc logic, giản lược UI một chút để hiển thị tốt trên 1 file HTML */}
+              {tab==="products"&&(
+                 <div style={card}>
+                    <button onClick={()=>setShowAddP(true)} style={{...btnP, marginBottom:10}}>+ Thêm SP</button>
+                    {showAddP && <div style={{background:"rgba(255,255,255,0.05)", padding: 15, borderRadius: 10, marginBottom: 10}}>
+                        <input style={{...inp, marginBottom: 10}} placeholder="Tên SP..." value={newP.name} onChange={e=>setNewP({...newP, name: e.target.value})}/>
+                        <input style={{...inp, marginBottom: 10}} type="number" placeholder="Giá bán..." value={newP.price} onChange={e=>setNewP({...newP, price: e.target.value})}/>
+                        <button onClick={addProduct} style={btnP}>Lưu</button>
+                    </div>}
+                    <div style={{overflow:"auto"}}>
+                        <table style={{width:"100%",borderCollapse:"collapse"}}>
+                            <thead><tr><th style={th}>Tên</th><th style={th}>Giá</th><th style={th}>Tồn</th></tr></thead>
+                            <tbody>
+                                {products.map(p=>(
+                                    <tr key={p.id}>
+                                        <td style={td}>{p.image} {p.name}</td>
+                                        <td style={td}>{fmtS(p.price)}đ</td>
+                                        <td style={td}>{p.stock}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                 </div>
+              )}
+            </div>
+
+            <div className="mobile-only" style={{background:C2,display:"flex",justifyContent:"space-around",padding:"8px"}}>
+              {navItems.map(item=>(
+                <button key={item.id} onClick={()=>setTab(item.id)} style={{background:"none",border:"none",color:tab===item.id?"#FF6B2B":"#fff",fontSize:20}}>{item.icon}</button>
+              ))}
+            </div>
+          </main>
+
+          {showChat&&<Chatbot products={products} customers={customers} orders={orders} onClose={()=>setShowChat(false)}/>}
+          {!showChat&&<button onClick={()=>setShowChat(true)} style={{position:"fixed",bottom:20,right:20,width:56,height:56,borderRadius:"50%",background:"#FF6B2B",border:"none",color:"#fff",fontSize:24,cursor:"pointer"}}>🤖</button>}
+          {notif&&<div style={{position:"fixed",top:14,left:"50%",transform:"translateX(-50%)",background:"#34C759",color:"#fff",padding:"11px 20px",borderRadius:12,zIndex:9999}}>{notif.msg}</div>}
+        </div>
+      );
+    }
+
+    // Kết xuất ứng dụng vào thẻ div#root
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
   { id:3,sku:"OPP-FIND7-256-BLK",name:"OPPO Find X7 256GB",category:"OPPO",brand:"OPPO",color:"Đen Bóng",price:22990000,costPrice:17500000,stock:2,minStock:3,sold:28,image:"📱" },
   { id:4,sku:"XIA-14U-256-PUR",name:"Xiaomi 14 Ultra 256GB",category:"Xiaomi",brand:"Xiaomi",color:"Tím Titan",price:23490000,costPrice:18000000,stock:15,minStock:3,sold:22,image:"📱" },
   { id:5,sku:"VIV-X100P-256-BLU",name:"Vivo X100 Pro 256GB",category:"Vivo",brand:"Vivo",color:"Xanh Biển",price:19990000,costPrice:15500000,stock:6,minStock:3,sold:19,image:"📱" },
