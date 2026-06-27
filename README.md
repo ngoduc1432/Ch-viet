@@ -1,33 +1,485 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PhoneShop Pro - Single HTML</title>
-  
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+```react
+import React, { useState, useEffect } from 'react';
+import { 
+  ShoppingCart, Smartphone, Wifi, WifiOff, Search, Plus, Trash2, 
+  CreditCard, Menu, CheckCircle, AlertTriangle, Package, Barcode, 
+  Store, X, QrCode, Banknote, Ticket, Gift, Users, UserPlus, 
+  Cake, AlertCircle, History, Star, Phone, ShieldCheck, UserCircle,
+  Briefcase, Key, Lock, Eye, EyeOff, LogOut, FileText
+} from 'lucide-react';
 
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Inter', -apple-system, sans-serif;
-      background: #0B1629;
-      color: #E8EDF5;
+// --- MOCK DATA ---
+const INITIAL_INVENTORY = [
+  { id: 'p1', name: 'iPhone 14 Pro Max 256GB - Tím', price: 25000000, imeis: ['359990123456789', '359990123456790'] },
+  { id: 'p2', name: 'Samsung Galaxy S23 Ultra - Đen', price: 21000000, imeis: ['358880123456781'] },
+  { id: 'p3', name: 'AirPods Pro 2', price: 5500000, imeis: ['AP2999888777'] },
+];
+
+const INITIAL_CUSTOMERS = [
+  { id: 'c1', phone: '0901234567', name: 'Nguyễn Văn A', tier: 'VIP_VANG', points: 150000, totalSpent: 45000000, debt: 0, dob: '1990-06-28', lastPurchase: '2026-05-15' },
+];
+
+const TIERS = {
+  THANH_VIEN: { label: 'Thành Viên', color: 'bg-gray-100 text-gray-700', discountRate: 0 },
+  VIP_VANG: { label: 'VIP Vàng', color: 'bg-yellow-100 text-yellow-700', discountRate: 0.02 }, 
+};
+
+// --- DATA NHÂN SỰ ---
+const ROLES = {
+  ADMIN: { id: 'ADMIN', name: 'Chủ Cửa Hàng / Admin', permissions: ['pos', 'crm', 'inventory', 'hr', 'reports'] },
+  MANAGER: { id: 'MANAGER', name: 'Quản Lý Cửa Hàng', permissions: ['pos', 'crm', 'inventory', 'reports'] },
+  CASHIER: { id: 'CASHIER', name: 'Thu Ngân', permissions: ['pos', 'crm'] },
+  STOCK_KEEPER: { id: 'STOCK_KEEPER', name: 'Quản Lý Kho', permissions: ['inventory'] }
+};
+
+const EMPLOYEES = [
+  { id: 'emp1', username: 'admin', password: '123', name: 'Đức Admin', role: 'ADMIN', baseSalary: 20000000, commissionRate: 0, avatar: 'Đ' },
+  { id: 'emp2', username: 'thungan1', password: '123', name: 'Lê Thị Thu', role: 'CASHIER', baseSalary: 8000000, commissionRate: 0.01, avatar: 'T' },
+  { id: 'emp3', username: 'kho1', password: '123', name: 'Trần Văn Kho', role: 'STOCK_KEEPER', baseSalary: 9000000, commissionRate: 0, avatar: 'K' },
+];
+
+export default function DucMobileApp() {
+  // --- AUTH STATE ---
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  
+  // Login Form State
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+  const [loginError, setLoginError] = useState('');
+
+  // --- APP STATE ---
+  const [activeTab, setActiveTab] = useState('pos');
+  const [isOnline, setIsOnline] = useState(true);
+  const [inventory, setInventory] = useState(INITIAL_INVENTORY);
+  const [customers, setCustomers] = useState(INITIAL_CUSTOMERS);
+  const [cart, setCart] = useState([]);
+  const [offlineOrders, setOfflineOrders] = useState([]);
+  const [notification, setNotification] = useState(null);
+  const [currentCustomer, setCurrentCustomer] = useState(null);
+  const [showCheckout, setShowCheckout] = useState(false);
+  
+  const showNotification = (msg, type = 'success') => {
+    setNotification({ msg, type });
+    setTimeout(() => setNotification(null), 3000);
+  };
+
+  // --- KIỂM TRA PHIÊN ĐĂNG NHẬP (MÔ PHỎNG LOCALSTORAGE) ---
+  useEffect(() => {
+    // Trong thực tế, bạn sẽ dùng localStorage.getItem('token')
+    const savedSession = localStorage.getItem('duc_mobile_session');
+    if (savedSession) {
+      try {
+        const user = JSON.parse(savedSession);
+        // Xác thực lại thông tin user
+        const validUser = EMPLOYEES.find(e => e.id === user.id);
+        if (validUser) {
+          setCurrentUser(validUser);
+          setIsAuthenticated(true);
+          // Set tab mặc định dựa trên quyền
+          if (validUser.role === 'STOCK_KEEPER') setActiveTab('inventory');
+          else setActiveTab('pos');
+        }
+      } catch (e) {
+        localStorage.removeItem('duc_mobile_session');
+      }
     }
-  </style>
-</head>
-<body>
-  <div id="root"></div>
+  }, []);
 
-  <script type="text/babel">
-    // Lấy các hooks từ biến global React thay vì import
-    const { useState, useEffect, useRef, useCallback } = React;
+  // --- XỬ LÝ ĐĂNG NHẬP ---
+  const handleLogin = (e) => {
+    e.preventDefault();
+    setLoginError('');
+    
+    // Giả lập call API xác thực
+    setTimeout(() => {
+      const user = EMPLOYEES.find(e => e.username === username && e.password === password);
+      if (user) {
+        setCurrentUser(user);
+        setIsAuthenticated(true);
+        
+        // Lưu phiên đăng nhập nếu check "Ghi nhớ"
+        if (rememberMe) {
+          localStorage.setItem('duc_mobile_session', JSON.stringify({ id: user.id, username: user.username, role: user.role }));
+        }
 
-    // ⚠️ QUAN TRỌNG: Nhập API Key của Claude vào đây. 
+        // Chuyển hướng tab theo quyền
+        if (user.role === 'STOCK_KEEPER') setActiveTab('inventory');
+        else setActiveTab('pos');
+        
+        showNotification(`Đăng nhập thành công! Chào ${user.name}`);
+      } else {
+        setLoginError('Sai tài khoản hoặc mật khẩu!');
+      }
+    }, 500);
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setCurrentUser(null);
+    localStorage.removeItem('duc_mobile_session');
+    setUsername('');
+    setPassword('');
+  };
+
+  // --- KIỂM TRA QUYỀN TRUY CẬP TRANG ---
+  const hasPermission = (tabId) => {
+    if (!currentUser) return false;
+    const roleConfig = ROLES[currentUser.role];
+    return roleConfig && roleConfig.permissions.includes(tabId);
+  };
+
+  // --- COMPONENT: LOGIN SCREEN ---
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4 bg-gradient-to-br from-slate-900 to-indigo-900">
+        <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden">
+          <div className="bg-slate-900 p-8 text-center border-b border-slate-800">
+             <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <Smartphone className="w-8 h-8 text-white" />
+             </div>
+             <h1 className="text-3xl font-black tracking-tight text-white mb-2">ĐỨC<span className="text-indigo-400">MOBILE</span></h1>
+             <p className="text-slate-400 text-sm">Hệ thống Quản trị Bán lẻ ERP & POS</p>
+          </div>
+          
+          <div className="p-8">
+            <h2 className="text-xl font-bold text-slate-800 mb-6 text-center">Đăng Nhập Hệ Thống</h2>
+            
+            {loginError && (
+              <div className="bg-rose-50 text-rose-600 p-3 rounded-lg text-sm font-medium mb-6 flex items-center justify-center border border-rose-200">
+                <AlertCircle className="w-4 h-4 mr-2" /> {loginError}
+              </div>
+            )}
+
+            <form onSubmit={handleLogin}>
+              <div className="mb-5 relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <UserCircle className="w-5 h-5 text-slate-400" />
+                </div>
+                <input 
+                  type="text" 
+                  value={username} 
+                  onChange={e => setUsername(e.target.value)}
+                  placeholder="Tên đăng nhập (Thử: admin, thungan1, kho1)" 
+                  className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  required 
+                />
+              </div>
+
+              <div className="mb-5 relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Lock className="w-5 h-5 text-slate-400" />
+                </div>
+                <input 
+                  type={showPassword ? 'text' : 'password'} 
+                  value={password} 
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="Mật khẩu (Thử: 123)" 
+                  className="w-full pl-10 pr-12 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  required 
+                />
+                <button 
+                  type="button" 
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-indigo-600"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between mb-8">
+                <label className="flex items-center cursor-pointer text-sm text-slate-600 font-medium">
+                  <input 
+                    type="checkbox" 
+                    checked={rememberMe} 
+                    onChange={() => setRememberMe(!rememberMe)}
+                    className="w-4 h-4 mr-2 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300" 
+                  />
+                  Ghi nhớ đăng nhập
+                </label>
+                <a href="#" className="text-sm font-medium text-indigo-600 hover:text-indigo-800">Quên mật khẩu?</a>
+              </div>
+
+              <button type="submit" className="w-full bg-indigo-600 text-white font-bold py-3.5 rounded-xl hover:bg-indigo-700 hover:shadow-lg transition-all flex items-center justify-center">
+                <ShieldCheck className="w-5 h-5 mr-2" /> ĐĂNG NHẬP (ENTER)
+              </button>
+            </form>
+
+            <div className="mt-6 p-4 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-600">
+               <p className="font-bold mb-1 text-slate-800">Tài khoản Test:</p>
+               <ul className="list-disc pl-4 space-y-1">
+                 <li><span className="font-semibold text-indigo-600">admin / 123</span>: Toàn quyền (POS, Kho, Nhân sự)</li>
+                 <li><span className="font-semibold text-indigo-600">thungan1 / 123</span>: Chỉ có quyền Bán hàng</li>
+                 <li><span className="font-semibold text-indigo-600">kho1 / 123</span>: Chỉ có quyền Quản lý Kho</li>
+               </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ==========================================
+  // COMPONENT: POS (Rút gọn logic cũ để gọn code)
+  // ==========================================
+  const POSScreen = () => {
+    const [scanInput, setScanInput] = useState('');
+    const [phoneSearch, setPhoneSearch] = useState('');
+
+    const handleAutoPickProduct = (product) => {
+      const availableImeis = product.imeis.filter(imei => !cart.some(c => c.imei === imei));
+      if (availableImeis.length > 0) {
+        setCart(prev => [...prev, { ...product, imei: availableImeis[0], cartItemId: Date.now() }]);
+        showNotification(`Đã thêm: ${product.name}`);
+      }
+    };
+    
+    return (
+      <div className="flex flex-col lg:flex-row h-full gap-6">
+        <div className="flex-[7] flex flex-col gap-6 h-full">
+           <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Barcode className="h-6 w-6 text-indigo-500" /></div>
+              <input type="text" placeholder="Quét mã vạch hoặc nhập số IMEI máy..." className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white outline-none" />
+            </div>
+          </div>
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex-1 overflow-y-auto">
+             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+              {inventory.map(prod => (
+                <div key={prod.id} className="border border-slate-200 rounded-xl p-4 hover:border-indigo-400 hover:shadow-md transition-all bg-white cursor-pointer" onClick={() => handleAutoPickProduct(prod)}>
+                  <h3 className="font-semibold text-slate-800 mb-1 truncate">{prod.name}</h3>
+                  <div className="flex justify-between items-center">
+                    <p className="text-indigo-600 font-bold">{prod.price.toLocaleString()} ₫</p>
+                    <span className={`px-2 py-0.5 rounded text-xs font-bold ${prod.imeis.length > 0 ? 'bg-green-100 text-green-700' : 'bg-rose-100 text-rose-700'}`}>Kho: {prod.imeis.length}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="flex-[3] bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col h-[600px] lg:h-auto overflow-hidden">
+          <div className="p-4 border-b border-slate-200 bg-slate-50">
+             <div className="relative">
+                <input type="text" placeholder="Tìm SĐT khách hàng..." className="w-full pl-9 pr-3 py-2 border rounded-xl outline-none" />
+                <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+             </div>
+          </div>
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/50">
+            {cart.map(item => (
+                <div key={item.cartItemId} className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm relative">
+                  <h4 className="font-semibold text-slate-800 text-sm truncate pr-6">{item.name}</h4>
+                  <p className="text-xs text-slate-500 mt-1">IMEI: {item.imei}</p>
+                  <p className="font-bold text-indigo-600 mt-1">{item.price.toLocaleString()} ₫</p>
+                  <button onClick={() => setCart(cart.filter(i => i.cartItemId !== item.cartItemId))} className="absolute right-3 top-1/2 -translate-y-1/2 text-rose-400 hover:text-rose-600"><Trash2 className="w-4 h-4" /></button>
+                </div>
+            ))}
+          </div>
+          <div className="p-5 bg-white border-t border-slate-200">
+             <div className="flex justify-between font-bold mb-4"><span>Tổng tiền:</span><span className="text-indigo-600 text-xl">{cart.reduce((s,i) => s+i.price, 0).toLocaleString()} ₫</span></div>
+             <button onClick={() => { if(cart.length) setShowCheckout(true) }} className="w-full py-4 rounded-xl font-bold bg-indigo-600 text-white hover:bg-indigo-700">THANH TOÁN</button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ==========================================
+  // COMPONENT: QUẢN LÝ NHÂN SỰ & QUYỀN (HRM)
+  // ==========================================
+  const HRMScreen = () => {
+    return (
+      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 min-h-[70vh]">
+        <div className="flex justify-between items-center mb-6">
+            <div>
+                <h2 className="text-2xl font-bold text-slate-800 flex items-center">
+                    <Briefcase className="w-7 h-7 mr-3 text-indigo-600" />
+                    Quản lý Nhân Sự & Phân Quyền
+                </h2>
+                <p className="text-slate-500 mt-1">Kiểm soát tài khoản truy cập và mức lương nhân viên.</p>
+            </div>
+            <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center font-medium">
+                <UserPlus className="w-5 h-5 mr-2" /> Thêm Nhân Viên Mới
+            </button>
+        </div>
+
+        {/* Cảnh báo bảo mật */}
+        <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl mb-6 flex items-start">
+            <AlertTriangle className="w-5 h-5 text-amber-600 mr-3 mt-0.5 shrink-0" />
+            <div className="text-sm text-amber-800">
+                <p className="font-bold mb-1">Cảnh báo bảo mật hệ thống:</p>
+                <p>Tài khoản <span className="font-mono bg-amber-100 px-1 rounded">admin</span> hiện đang có toàn quyền cấu hình chi nhánh. Hãy thay đổi mật khẩu định kỳ để tránh thất thoát dữ liệu. Nhân viên Thu ngân không thể thấy màn hình Kho và màn hình này.</p>
+            </div>
+        </div>
+
+        {/* Bảng Danh sách Nhân sự */}
+        <div className="overflow-x-auto border border-slate-200 rounded-xl">
+            <table className="w-full text-left">
+                <thead className="bg-slate-50 border-b border-slate-200">
+                    <tr>
+                        <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase">Thông tin Nhân viên</th>
+                        <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase">Tài khoản & Phân quyền</th>
+                        <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase text-right">Lương cơ bản</th>
+                        <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase text-right">Mức hoa hồng</th>
+                        <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase text-center">Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                    {EMPLOYEES.map(emp => (
+                        <tr key={emp.id} className="hover:bg-slate-50 transition-colors">
+                            <td className="py-4 px-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-gradient-to-br from-indigo-100 to-purple-100 border border-indigo-200 text-indigo-700 rounded-full flex items-center justify-center font-bold">
+                                        {emp.avatar}
+                                    </div>
+                                    <div>
+                                        <div className="font-bold text-slate-800">{emp.name}</div>
+                                        <div className="text-xs text-slate-500 mt-0.5 flex items-center">
+                                            ID: {emp.id}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td className="py-4 px-6">
+                                <div className="font-mono text-sm text-slate-700 font-semibold mb-1 bg-slate-100 inline-block px-2 py-0.5 rounded">
+                                    @ {emp.username}
+                                </div>
+                                <div>
+                                    <span className={`text-[10px] px-2 py-0.5 rounded-md font-bold uppercase ${
+                                        emp.role === 'ADMIN' ? 'bg-purple-100 text-purple-700' :
+                                        emp.role === 'CASHIER' ? 'bg-emerald-100 text-emerald-700' :
+                                        'bg-blue-100 text-blue-700'
+                                    }`}>
+                                        {ROLES[emp.role].name}
+                                    </span>
+                                </div>
+                            </td>
+                            <td className="py-4 px-6 text-right font-semibold text-slate-700">
+                                {emp.baseSalary.toLocaleString()} ₫
+                            </td>
+                            <td className="py-4 px-6 text-right text-indigo-600 font-semibold">
+                                {emp.commissionRate * 100}% <span className="text-xs font-normal text-slate-500 block mt-0.5">(Theo doanh số)</span>
+                            </td>
+                            <td className="py-4 px-6 text-center">
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                  <span className="w-2 h-2 mr-1 bg-green-500 rounded-full"></span> Hoạt động
+                                </span>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+      </div>
+    );
+  }
+
+  // --- TRANG CHÍNH APP ---
+  return (
+    <div className="min-h-screen bg-slate-100 font-sans flex flex-col pb-16 md:pb-0">
+      {notification && (
+        <div className="fixed top-6 right-6 z-50 animate-fade-in-down">
+          <div className="flex items-center px-5 py-3 rounded-xl shadow-xl text-white font-medium bg-emerald-500">
+            <CheckCircle className="w-5 h-5 mr-2" /> {notification.msg}
+          </div>
+        </div>
+      )}
+
+      {/* HEADER CỦA HỆ THỐNG */}
+      <header className="bg-slate-900 text-white px-6 py-3 shadow-lg flex justify-between items-center sticky top-0 z-40">
+        <div className="flex items-center gap-8">
+          <div className="flex items-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center mr-3"><Smartphone className="w-5 h-5" /></div>
+            <h1 className="text-xl font-black tracking-tight text-white hidden sm:block">ĐỨC<span className="text-indigo-400">MOBILE</span></h1>
+          </div>
+          
+          {/* THANH ĐIỀU HƯỚNG THEO QUYỀN */}
+          <nav className="hidden md:flex bg-slate-800 p-1 rounded-lg">
+            {hasPermission('pos') && (
+              <button onClick={() => setActiveTab('pos')} className={`px-4 py-2 rounded-md font-medium text-sm flex items-center transition-colors ${activeTab === 'pos' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-300 hover:text-white hover:bg-slate-700'}`}>
+                <ShoppingCart className="w-4 h-4 mr-2" /> Bán hàng
+              </button>
+            )}
+            {hasPermission('inventory') && (
+              <button onClick={() => setActiveTab('inventory')} className={`px-4 py-2 rounded-md font-medium text-sm flex items-center transition-colors ${activeTab === 'inventory' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-300 hover:text-white hover:bg-slate-700'}`}>
+                <Package className="w-4 h-4 mr-2" /> Kho hàng
+              </button>
+            )}
+            {hasPermission('hr') && (
+              <button onClick={() => setActiveTab('hr')} className={`px-4 py-2 rounded-md font-medium text-sm flex items-center transition-colors ${activeTab === 'hr' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-300 hover:text-white hover:bg-slate-700'}`}>
+                <Briefcase className="w-4 h-4 mr-2" /> Nhân sự
+              </button>
+            )}
+            {hasPermission('reports') && (
+              <button onClick={() => showNotification('Chức năng Báo cáo đang phát triển!')} className="px-4 py-2 rounded-md font-medium text-sm flex items-center transition-colors text-slate-300 hover:text-white hover:bg-slate-700">
+                <FileText className="w-4 h-4 mr-2" /> Báo cáo
+              </button>
+            )}
+          </nav>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <button onClick={() => setIsOnline(!isOnline)} className={`flex items-center px-4 py-1.5 rounded-full text-xs font-bold border transition-colors ${isOnline ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-rose-500/10 border-rose-500/30 text-rose-400 shadow-[0_0_15px_rgba(225,29,72,0.3)]'}`}>
+            {isOnline ? <Wifi className="w-3.5 h-3.5 mr-1.5" /> : <WifiOff className="w-3.5 h-3.5 mr-1.5" />} {isOnline ? 'ONLINE' : 'OFFLINE'}
+          </button>
+          
+          {/* USER MENU & LOGOUT */}
+          <div className="flex items-center gap-3 border-l border-slate-700 pl-4 group relative">
+            <div className="hidden sm:block text-right">
+              <p className="text-sm font-semibold leading-tight text-white">{currentUser.name}</p>
+              <p className="text-xs text-indigo-300">{ROLES[currentUser.role].name}</p>
+            </div>
+            <div className="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center font-bold border-2 border-slate-700">
+                {currentUser.avatar}
+            </div>
+
+            {/* Dropdown Đăng xuất */}
+            <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                <button onClick={handleLogout} className="w-full flex items-center px-4 py-3 text-sm font-medium text-rose-600 hover:bg-rose-50 transition-colors">
+                    <LogOut className="w-4 h-4 mr-2" /> Đăng xuất khỏi thiết bị
+                </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* MAIN CONTENT VÙNG RENDER */}
+      <main className="flex-1 p-4 md:p-6 max-w-[1600px] w-full mx-auto relative h-[calc(100vh-140px)] md:h-[calc(100vh-72px)] overflow-y-auto">
+        {activeTab === 'pos' && hasPermission('pos') && <POSScreen />}
+        {activeTab === 'inventory' && hasPermission('inventory') && (
+            <div className="flex items-center justify-center h-full bg-white rounded-2xl border border-slate-200 flex-col">
+                <Package className="w-16 h-16 text-slate-300 mb-4" />
+                <p className="text-slate-500 text-lg font-medium">Giao diện Quản lý Kho Hàng & IMEI</p>
+                <p className="text-sm text-slate-400 mt-2">Dành cho bộ phận Kho</p>
+            </div>
+        )}
+        {activeTab === 'hr' && hasPermission('hr') && <HRMScreen />}
+        
+        {/* Màn hình thông báo lỗi nếu truy cập sai quyền */}
+        {!hasPermission(activeTab) && (
+             <div className="flex items-center justify-center h-full bg-white rounded-2xl border border-slate-200 flex-col">
+                <ShieldCheck className="w-16 h-16 text-rose-300 mb-4" />
+                <p className="text-slate-800 text-lg font-bold">Lỗi truy cập</p>
+                <p className="text-sm text-slate-500 mt-2">Bạn không có quyền truy cập vào chức năng này!</p>
+            </div>
+        )}
+      </main>
+
+      {showCheckout && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+              <div className="bg-white p-6 rounded-2xl max-w-sm w-full text-center">
+                  <CheckCircle className="w-16 h-16 text-emerald-500 mx-auto mb-4" />
+                  <h3 className="text-xl font-bold mb-2">Thanh toán thành công!</h3>
+                  <button onClick={() => {setShowCheckout(false); setCart([])}} className="w-full mt-4 py-3 bg-slate-800 text-white rounded-xl">Đóng</button>
+              </div>
+          </div>
+      )}
+    </div>
+  );
+}
+
+```
     // Lưu ý: Đặt Key trong file HTML tĩnh có rủi ro lộ Key nếu bạn đưa lên mạng public.
     const ANTHROPIC_API_KEY = ""; 
 
